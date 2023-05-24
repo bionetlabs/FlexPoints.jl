@@ -1,0 +1,3 @@
+module Algorithm
+
+end
