@@ -30,7 +30,7 @@ function rmse(data::Points2D, samples::Points2D)::Float64
     
     errorsum = 0.0
     for (i, yi_approx) in enumerate(yapprox)
-        yi = data[i][2]
+        yi = y(data, i)
         errorsum += (yi - yi_approx)^2
     end
 
@@ -50,7 +50,7 @@ function nrmse(data::Points2D, samples::Points2D)::Float64
     numerator = 0.0
     denominator = 0.0
     for (i, yi_approx) in enumerate(yapprox)
-        yi = data[i][2]
+        yi = y(data, i)
         numerator += (yi - yi_approx)^2
         denominator += yi^2
     end

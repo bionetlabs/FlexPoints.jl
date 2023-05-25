@@ -84,4 +84,27 @@ using FlexPoints, Test
             @test_throws AssertionError nqs(data, Points2D{Float64}())
         end
     end
+
+    @testset "Algorithm" begin
+        data = [
+            (1.0, 1.0),
+            (2.0, 2.0),
+            (3.0, 3.0),
+            (4.0, 4.0),
+            (5.0, 5.0),
+            (6.0, 6.0),
+            (7.0, 7.0)
+        ]
+
+        @testset "Derivatives" begin
+            @test ∂(data) == [1.0, 1.0, 1.0, 1.0, 1.0]
+            @test ∂(data, 1) == [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+            @test ∂(data, 2) == [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+            @test_throws AssertionError ∂([(1.0, 1.0), (2.0, 2.0)], 1)
+            @test_throws AssertionError ∂([(1.0, 1.0), (2.0, 2.0)])
+            @test_throws AssertionError ∂(data, 0)
+            @test_throws AssertionError ∂(data, 3)
+        end
+    end
 end
