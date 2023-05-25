@@ -4,6 +4,7 @@ export linapprox
 
 using FlexPoints.Types
 
+"Linear approximation"
 function linapprox(data::Points2D, targetx::Real)
     @assert !isempty(data)
     @assert targetx >= data[1][1]
