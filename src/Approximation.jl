@@ -2,9 +2,9 @@ module Approximation
 
 export linapprox
 
-function linapprox(
-    data::Vector{Tuple{T1, T2}}, targetx::Real
-) where T1 <: Real where T2 <: Real
+using FlexPoints.Types
+
+function linapprox(data::Points2D, targetx::Real)
     @assert !isempty(data)
     @assert targetx >= data[1][1]
     @assert targetx <= data[end][1]
