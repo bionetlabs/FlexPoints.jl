@@ -106,5 +106,22 @@ using FlexPoints, Test
             @test_throws AssertionError ∂(data, 0)
             @test_throws AssertionError ∂(data, 3)
         end
+
+        @testset "FlexPoints" begin
+            data = [
+                (1.0, 5.0),
+                (2.0, 7.0),
+                (3.0, 8.0),
+                (4.0, 8.0),
+                (5.0, 8.0),
+                (6.0, 8.0),
+                (7.0, 8.0),
+                (8.0, 9.0),
+                (9.0, 10.0)
+            ]
+
+            results1 = flexpoints(data, (true, false, true, false))
+            @test length(results1) > 0
+        end
     end
 end

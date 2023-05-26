@@ -7,7 +7,9 @@ export Points2D, x, y
 Points2D = Vector{Tuple{T, T}} where T <: Real
 
 x(data::Points2D, index::Integer) = data[index][1]
+x(point::Tuple{Real, Real}) = point[1]
 
 y(data::Points2D, index::Integer) = data[index][2]
+y(point::Tuple{Real, Real}) = point[2]
 
 end
