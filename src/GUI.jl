@@ -3,13 +3,14 @@ module GUI
 export plotdata
 
 using GLMakie
+using Colors
 
 using FlexPoints
 
 function plotdata(;
     resolution=primary_resolution(), darkmode=true
 )
-    figure = createscenes(resolution, darkmode)
+    figure = createfigure(resolution, darkmode)
   
     lines, points = drawgraph(figure)
 
@@ -29,18 +30,27 @@ function connect(figure, darkmode, colorpicker, lines, points)
 end
 
 function drawgraph(figure)
-    Axis(figure[1, 2])
+    scene = LScene(
+        figure[1, 2],
+        show_axis=true,
+        scenekw = (
+            clear=true,
+            backgroundcolor=:black
+        )
+    )
+
+    cam2d!(scene.scene)
 
     xs = LinRange(0, 10, 130)
     ys = 0.5 .* sin.(xs)
 
-    lines = scatterlines!(xs, ys, color=:green, markersize=0)
+    lines = scatterlines!(scene, xs, ys, color=:green, markersize=0)
 
     data = collect(zip(xs, ys))
     indices = flexpoints(data, (true, true, true, true))
     points = [data[i...] for i in indices]
 
-    points = scatter!(points, color=:white, markersize=8)
+    points = scatter!(scene, points, color=:white, markersize=8)
 
     lines, points
 end
@@ -60,7 +70,7 @@ function drawmenu(figure)
     darkmode, colorpicker
 end
 
-function createscenes(resolution::Tuple{Integer, Integer}, darkmode::Bool)
+function createfigure(resolution::Tuple{Integer, Integer}, darkmode::Bool)
     if darkmode
         set_theme!(theme_black(), resolution=resolution)
     else
@@ -75,16 +85,18 @@ function createscenes(resolution::Tuple{Integer, Integer}, darkmode::Bool)
         vsync=true
     )
 
-    figure = Figure()
+    figure = Figure(figure_padding=1)
 
     figure
 end
 
 function applymode(figure, darkmode::Bool)
     if darkmode
-         set_theme!(theme_black())
+        figure.scene.theme = theme_black()
+        figure.scene.backgroundcolor = parse(RGBA, figure.scene.theme.Axis.backgroundcolor[])
     else
-         set_theme!(theme_light())
+        figure.scene.theme = theme_light()
+        figure.scene.backgroundcolor = parse(RGBA, figure.scene.theme.Axis.backgroundcolor[])
     end
 end
 
