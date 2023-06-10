@@ -66,21 +66,21 @@ function ∂negative(derivatives::Vector{Float64})::Vector{Int}
     mx = zeros(derivativeslen)
 
     for i in 1:(lastindex - 1)
-        mx[i] = derivatives[i] * derivatives[i + 1]
+        mx[i + 1] = derivatives[i] * derivatives[i + 1]
     end
 
     o3 = map(ix -> ix[1], filter(ix -> ix[2] <= 0.0, collect(enumerate(mx))))
 
     o3tail = if !isempty(o3)
-        if first(o3) != 0
-            newarray = [0]
+        if first(o3) != 1
+            newarray = [1]
             append!(newarray, o3)
             newarray
         else
             o3
         end
     else
-        [0]
+        [1]
     end
 
     if last(o3tail) != lastindex
@@ -98,14 +98,16 @@ function flexpoints(
 )::Vector{Int}
     @assert !isempty(data)
     requiredlen = length(data) ÷ 2 - 1
-    maxderivative = if derivatives[1]
-        1
-    elseif derivatives[2]
-        2
+    maxderivative = if derivatives[4]
+        4
     elseif derivatives[3]
         3
-    elseif derivatives[4]
-        4
+    elseif derivatives[2]
+        2
+    elseif derivatives[1]
+        1
+    else
+        error("at least one derivative should be used")
     end
     @assert requiredlen >= maxderivative
 

@@ -11,10 +11,10 @@ include("Algorithm.jl")
 include("Approximation.jl")
 @reexport using FlexPoints.Approximation
 
-include("GUI.jl")
-@reexport using FlexPoints.GUI
-
 include("Measures.jl")
 @reexport using FlexPoints.Measures
+
+include("GUI.jl")
+@reexport using FlexPoints.GUI
 
 end
