@@ -14,7 +14,7 @@ include("Approximation.jl")
 include("Measures.jl")
 @reexport using FlexPoints.Measures
 
-include("GUI.jl")
+include("GUI/GUI.jl")
 @reexport using FlexPoints.GUI
 
 end
