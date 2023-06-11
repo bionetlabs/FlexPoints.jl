@@ -48,10 +48,12 @@ function drawmenu(topbar)
 
     # colorpicker = Menu(figure, options = ["blue", "green", "white"], default = "white")
     
-    tag(topbar[1, 1], "\u2a33 |> data")
-    # Button(topbar[1, 1], label="Data", height=BUTTON_HEIGHT)
-    Button(topbar[1, 2], label="data", height=BUTTON_HEIGHT)
-    Box(topbar[1, 3], color=RGBAf(0, 0, 0, 0), height=BUTTON_HEIGHT, strokevisible=false)
+    tag(topbar[1, 1], "▤|dataload")
+    tag(topbar[1, 2], "⛁|data")
+    tag(topbar[1, 3], "❉|data")
+    tag(topbar[1, 4], "|data")
+    tag(topbar[1, 5], "䷀ 3D ䷀")
+    Box(topbar[1, 6], color=RGBAf(0, 0, 0, 0), height=BUTTON_HEIGHT, strokevisible=false)
     # figure[1, 1] = hgrid!(
     #     Button(figure, label="Data", height=BUTTON_HEIGHT),
     #     # darkmode_label, darkmode,
@@ -91,7 +93,7 @@ end
 
 function prepareui(resolution::Tuple{Integer, Integer}, darkmode::Bool)::UIState
     if darkmode
-        set_theme!(theme_dark(), resolution=resolution)
+        set_theme!(theme_black(), resolution=resolution)
     else
         set_theme!(theme_light(), resolution=resolution)
     end
