@@ -1,15 +1,17 @@
 module GUI
 
-export plotdata
+export gui
 
 using GLMakie
 using Colors
 
+import FreeTypeAbstraction.FTFont
+
 using FlexPoints
 
-include("consts.jl")
+include("widgets.jl")
 
-struct AppLayout
+struct UIState
     figure::Figure
     topbar::GridLayout
     leftpanel::GridLayout
@@ -18,18 +20,18 @@ struct AppLayout
     bottombar::GridLayout
 end
 
-function plotdata(;
+function gui(;
     resolution=primary_resolution(), darkmode=true
 )
-    applayout = layout(resolution, darkmode)
+    uistate = prepareui(resolution, darkmode)
   
-    scene, lines, points = drawgraph(applayout.centralpanel)
+    scene, lines, points = drawgraph(uistate.centralpanel)
 
-    drawmenu(applayout.topbar)
+    drawmenu(uistate.topbar)
 
     # connect(scene, darkmode, colorpicker, lines, points)
 
-    applayout.figure
+    uistate.figure
 end
 
 function connect(scene, darkmode, colorpicker, lines, points)
@@ -46,8 +48,9 @@ function drawmenu(topbar)
 
     # colorpicker = Menu(figure, options = ["blue", "green", "white"], default = "white")
     
-    Button(topbar[1, 1], label="Data", height=BUTTON_HEIGHT)
-    Button(topbar[1, 2], label="Data", height=BUTTON_HEIGHT)
+    tag(topbar[1, 1], "\u2a33 |> data")
+    # Button(topbar[1, 1], label="Data", height=BUTTON_HEIGHT)
+    Button(topbar[1, 2], label="data", height=BUTTON_HEIGHT)
     Box(topbar[1, 3], color=RGBAf(0, 0, 0, 0), height=BUTTON_HEIGHT, strokevisible=false)
     # figure[1, 1] = hgrid!(
     #     Button(figure, label="Data", height=BUTTON_HEIGHT),
@@ -86,7 +89,7 @@ function drawgraph(figure)
     scene, lines, points
 end
 
-function layout(resolution::Tuple{Integer, Integer}, darkmode::Bool)::AppLayout
+function prepareui(resolution::Tuple{Integer, Integer}, darkmode::Bool)::UIState
     if darkmode
         set_theme!(theme_dark(), resolution=resolution)
     else
@@ -101,22 +104,18 @@ function layout(resolution::Tuple{Integer, Integer}, darkmode::Bool)::AppLayout
         vsync=true
     )
 
+    
+    loadfonts()
+
     figure = Figure(figure_padding=5)
 
-    topbar = figure[1, 1:3] = GridLayout()
+    topbar = figure[1, 1:3] = GridLayout(alignmode=Outside(LAYOUT_PADDING))
     leftpanel = figure[2, 1] = GridLayout()
     centralpanel = figure[2, 2] = GridLayout()
     rightpanel = figure[2, 3] = GridLayout()
     bottombar = figure[3, 1:3] = GridLayout()
-
-    # colsize!(figure.layout, 1, Relative(1))
-    # rowsize!(figure.layout, 1, Fixed(TOP_BAR_HEIGHT))
-
-    # colgap!(figure.layout, 0)
-    # rowgap!(figure.layout, 0)
-
     
-    AppLayout(
+    UIState(
         figure,
         topbar,
         leftpanel,
@@ -138,6 +137,26 @@ function primary_resolution()
     monitor = GLMakie.GLFW.GetPrimaryMonitor()
     videomode = GLMakie.MonitorProperties(monitor).videomode
     return (videomode.width, videomode.height)
+end
+
+function loadfonts()
+    fonts = Dict{Symbol, FTFont}()
+    fontspath = joinpath("asset", "font")
+    for fontfile in readdir(fontspath)
+        fontpath = joinpath(fontspath, fontfile)
+        if isfile(fontpath)
+            font = GLMakie.to_font(fontpath)
+            fontid = Symbol(lowercase(font.family_name), "_", lowercase(font.style_name))
+            fonts[fontid] = font
+        end
+    end
+    
+
+    update_theme!(
+        fonts=NamedTuple{Tuple(keys(fonts))}(values(fonts))
+    )
+
+    @info "available fonts", keys(fonts)
 end
 
 end
