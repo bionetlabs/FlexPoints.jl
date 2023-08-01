@@ -10,12 +10,12 @@ function tag(
         target; 
         label=label,
         tellheight=true,
-        padding=[12, 0, 5, 0],
+        padding=[20, 0, 10, 0],
         strokewidth=1,
         buttoncolor=:deepskyblue4,
         strokecolor=:deepskyblue4,
         font=:juliamono_light,
-        fontsize=22,
+        fontsize=25,
         labelcolor=:gray98,
         cornerradius=7,
     )

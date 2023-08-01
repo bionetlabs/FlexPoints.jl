@@ -9,25 +9,19 @@ import FreeTypeAbstraction.FTFont
 
 using FlexPoints
 
+include("state.jl")
 include("widgets.jl")
-
-struct UIState
-    figure::Figure
-    topbar::GridLayout
-    leftpanel::GridLayout
-    centralpanel::GridLayout
-    rightpanel::GridLayout
-    bottombar::GridLayout
-end
 
 function gui(;
     resolution=primary_resolution(), darkmode=true
 )
     uistate = prepareui(resolution, darkmode)
+
+    drawmenu(uistate.topbar)
   
     scene, lines, points = drawgraph(uistate.centralpanel)
 
-    drawmenu(uistate.topbar)
+    drawstats(uistate.rightpanel)
 
     # connect(scene, darkmode, colorpicker, lines, points)
 
@@ -48,11 +42,11 @@ function drawmenu(topbar)
 
     # colorpicker = Menu(figure, options = ["blue", "green", "white"], default = "white")
     
-    tag(topbar[1, 1], "▤|dataload")
-    tag(topbar[1, 2], "⛁|data")
-    tag(topbar[1, 3], "❉|data")
-    tag(topbar[1, 4], "|data")
-    tag(topbar[1, 5], "䷀ 3D ䷀")
+    tag(topbar[1, 1], "▤ dataload")
+    # tag(topbar[1, 2], "⛁|data")
+    # tag(topbar[1, 3], "❉|data")
+    # tag(topbar[1, 4], "|data")
+    # tag(topbar[1, 5], "䷀ 3D ䷀")
     Box(topbar[1, 6], color=RGBAf(0, 0, 0, 0), height=BUTTON_HEIGHT, strokevisible=false)
     # figure[1, 1] = hgrid!(
     #     Button(figure, label="Data", height=BUTTON_HEIGHT),
@@ -66,6 +60,8 @@ function drawmenu(topbar)
 end
 
 function drawgraph(figure)
+    rowsize!(figure, 1, Auto(1))
+
     scene = LScene(
         figure[2, 1],
         show_axis=true,
@@ -89,6 +85,15 @@ function drawgraph(figure)
     points = scatter!(scene, points, color=:white, markersize=8)
 
     scene, lines, points
+end
+
+function drawstats(rightbar)
+    Label(
+        rightbar[1, 1],
+        "MRSE",
+        justification = :center,
+        lineheight = 1.1
+    )
 end
 
 function prepareui(resolution::Tuple{Integer, Integer}, darkmode::Bool)::UIState
