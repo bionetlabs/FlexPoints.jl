@@ -3,6 +3,7 @@ using Colors
 using Match
 
 include("styles.jl")
+include("state.jl")
 
 function tagexclusive(
     target, label, state::Observable{Vector{Bool}}, index::Integer;

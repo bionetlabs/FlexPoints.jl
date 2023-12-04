@@ -4,34 +4,19 @@ export gui
 
 using GLMakie
 using Colors
+using DataFrames
 
 import FreeTypeAbstraction.FTFont
 
 using FlexPoints
 
-include("state.jl")
 include("widgets.jl")
-
-mutable struct TopBarState
-    layout::GridLayout
-    state::Observable{Vector{Bool}}
-end
-
-struct UIState
-    figure::Figure
-    topbar::TopBarState
-    leftpanel::GridLayout
-    centralpanel::GridLayout
-    rightpanel::GridLayout
-    bottombar::GridLayout
-    nightmode::Observable{Bool}
-    styles::Styles
-end
 
 function gui(;
     resolution=primary_resolution(), darkmode=true
 )
     uistate = prepareui(resolution, darkmode)
+    appstate = AppState(uistate, DataFrame())
 
     scene, lines, points = drawgraph(uistate.centralpanel, resolution)
 
