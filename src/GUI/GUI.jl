@@ -9,6 +9,7 @@ import FreeTypeAbstraction.FTFont
 
 using FlexPoints
 
+include("state.jl")
 include("widgets.jl")
 
 mutable struct TopBarState
