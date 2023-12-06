@@ -15,24 +15,17 @@ include("widgets.jl")
 function gui(;
     resolution=primary_resolution(), darkmode=true
 )
-    uistate = prepareui(resolution, darkmode)
+    uistate = initui(darkmode, resolution)
     appstate = AppState(uistate, DataFrame())
-
-    scene, lines, points = drawgraph(uistate.centralpanel, resolution)
-
-    drawmenu(uistate)
 
     uistate.figure
 end
 
 function drawmenu(uistate::UIState)
-    figure = uistate.figure
     topbar = uistate.topbar
     layout = topbar.layout
-    nightmode = uistate.nightmode
-    styles = uistate.styles
 
-    daynight(layout[1, 1], nightmode, figure, styles)
+    daynight(uistate)
     tagexclusive(layout[1, 2], "▤ dataload", topbar.state, 1)
     tagexclusive(layout[1, 3], "⛁ data", topbar.state, 2)
     tagexclusive(layout[1, 4], "❉ data", topbar.state, 3)
@@ -41,21 +34,10 @@ function drawmenu(uistate::UIState)
     Box(layout[1, 7], color=RGBAf(0, 0, 0, 0), height=BUTTON_HEIGHT, strokevisible=false)
 end
 
-function drawgraph(figure, resolution)
-    # scene = LScene(
-    #     figure[2, 1],
-    #     show_axis=true,
-    #     # height=resolution[2] / 2,
-    #     # width=resolution[1] / 2,
-    #     scenekw=(
-    #         viewport=Rect(0, 0, resolution[1], resolution[2]),
-    #         clear=false,
-    #         backgroundcolor=:black,
-    #     )
-    # )
-    # cam2d!(scene.scene)
+function drawgraph(uistate::UIState)::Axis
+    figure = uistate.centralpanel
+    style = currentstyle(uistate)
 
-    # size(figure[2, 1])
     axis = Axis(
         figure[1, 1],
         ylabel="signal [mV]",
@@ -71,31 +53,35 @@ function drawgraph(figure, resolution)
         yticklabelfont=:juliamono_light,
     )
     hidespines!(axis)
-    # hidespines!(axis, :t, :r)
 
     xs = LinRange(0, 100, 1000)
     ys = 1.5 .* sin.(xs)
 
-    lines = scatterlines!(axis, xs, ys, color=:green, markersize=0)
+    signallines = scatterlines!(axis, xs, ys, color=style.signalcolor, markersize=0)
 
     data = collect(zip(xs, ys))
     indices = flexpoints(data, (true, true, true, true))
     points = [data[i...] for i in indices]
 
-    points = scatter!(axis, points, color=:white, markersize=8)
+    flexpointslines = scatterlines!(axis, points, color=style.flexpointcolor, markersize=12, linestyle=:dot)
 
-    axis, lines, points
+    uistate.graph[] = axis
+    axis
 end
 
-function prepareui(resolution::Tuple{Integer,Integer}, darkmode::Bool)::UIState
+function initui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution())::UIState
     GLMakie.activate!(;
         fullscreen=true,
         framerate=120,
         fxaa=true,
         title="FlexPoints",
-        vsync=true
+        vsync=true,
     )
 
+    makeui(darkmode, resolution)
+end
+
+function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution())::UIState
     if darkmode
         set_theme!(theme_black(), size=resolution)
     else
@@ -123,7 +109,7 @@ function prepareui(resolution::Tuple{Integer,Integer}, darkmode::Bool)::UIState
     rowsize!(figure.layout, 2, Auto(1.0))
     rowsize!(figure.layout, 3, Fixed(TOP_BAR_HEIGHT))
 
-    state = UIState(
+    uistate = UIState(
         figure,
         topbar,
         leftpanel,
@@ -131,10 +117,50 @@ function prepareui(resolution::Tuple{Integer,Integer}, darkmode::Bool)::UIState
         rightpanel,
         bottombar,
         Observable(true),
-        Styles()
+        Styles(),
+        Ref{Union{Nothing,Axis}}(nothing),
+        primary_resolution()
     )
 
-    state
+    drawgraph(uistate)
+    drawmenu(uistate)
+
+    uistate
+end
+
+function resetui(uistate::UIState, darkmode::Bool)
+    empty!(uistate.figure)
+
+    if darkmode
+        set_theme!(theme_black(), size=uistate.resolution)
+    else
+        set_theme!(theme_light(), size=uistate.resolution)
+    end
+
+    loadfonts()
+
+    uistate.figure = Figure(figure_padding=0)
+    figure = uistate.figure
+    topbarlayout = figure[1, 1:3] = GridLayout(alignmode=Outside(LAYOUT_PADDING))
+    uistate.topbar = TopBarState(
+        topbarlayout, Observable([false, true, false, false, false]))
+    uistate.leftpanel = figure[2, 1] = GridLayout()
+    uistate.centralpanel = figure[2, 2] = GridLayout()
+    uistate.rightpanel = figure[2, 3] = GridLayout()
+    uistate.bottombar = figure[3, 1:3] = GridLayout()
+
+    colsize!(figure.layout, 1, Auto(15.0))
+    colsize!(figure.layout, 2, Auto(100.0))
+    colsize!(figure.layout, 3, Auto(15.0))
+    rowsize!(figure.layout, 1, Fixed(TOP_BAR_HEIGHT))
+    rowsize!(figure.layout, 2, Auto(1.0))
+    rowsize!(figure.layout, 3, Fixed(TOP_BAR_HEIGHT))
+
+    drawgraph(uistate)
+    drawmenu(uistate)
+
+    close(display(uistate.figure))
+    display(uistate.figure)
 end
 
 function primary_resolution()

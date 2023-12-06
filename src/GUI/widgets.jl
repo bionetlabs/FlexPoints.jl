@@ -2,12 +2,11 @@ using GLMakie
 using Colors
 using Match
 
-include("styles.jl")
-include("state.jl")
+include("states.jl")
 
 function tagexclusive(
     target, label, state::Observable{Vector{Bool}}, index::Integer;
-)
+)::Button
     buttoncolor = lift(x -> x[index] ? :ivory3 : :gray7, state)
     buttoncolor_hover = lift(x -> x[index] ? :ivory2 : :gray14, state)
     buttoncolor_active = lift(x -> x[index] ? :ivory1 : :gray21, state)
@@ -42,6 +41,8 @@ function tagexclusive(
         end
         notify(state)
     end
+
+    button
 end
 
 function tag(
@@ -78,26 +79,21 @@ function tag(
     button
 end
 
-function daynight(target, nightmode::Observable{Bool}, figure::Figure, styles::Styles)::Button
+function daynight(uistate::UIState)::Button
+    target = uistate.topbar.layout[1, 1]
+    nightmode = uistate.nightmode
+
     label = lift(nightmode) do state
         @match state begin
             false => "☼ light mode"
-            true => "☽ night mode"
+            true => "☽ dark mode"
         end
     end
     button = tag(target, label, nightmode)
 
-    applystyle(figure, nightmode, styles)
+    on(button.clicks) do _
+        applystyle(uistate)
+    end
 
     button
-end
-
-function applystyle(figure::Figure, nightmode::Observable{Bool}, styles::Styles)
-    on(nightmode) do nightmode
-        if nightmode
-            figure.scene.backgroundcolor[] = styles.darkmode.background
-        else
-            figure.scene.backgroundcolor[] = styles.lightmode.background
-        end
-    end
 end
