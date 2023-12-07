@@ -3,9 +3,26 @@ using DataFrames
 
 include("styles.jl")
 
+@enum PanelIndex begin
+    leftpanel = 1
+    rightpanel = 3
+end
+
+@enum LeftPanelState begin
+    sources = 1
+    samples = 2
+    algorithms = 3
+end
+
+@enum RightPanelState begin
+    results = 1
+    settings = 2
+end
+
 mutable struct TopBarState
     layout::GridLayout
-    state::Observable{Vector{Bool}}
+    leftpanel::Observable{Union{LeftPanelState,Nothing}}
+    rightpanel::Observable{Union{RightPanelState,Nothing}}
 end
 
 mutable struct UIState

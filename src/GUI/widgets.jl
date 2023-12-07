@@ -4,6 +4,66 @@ using Match
 
 include("states.jl")
 
+function header(target, label, style::CurrentStyle)
+    Label(
+        target,
+        label,
+        font=:juliamono_light,
+        fontsize=HEADER_FONT_SIZE,
+        color=style.disabledbuttonlabelcolor
+    )
+end
+
+function tagenum(
+    target,
+    label,
+    state::Observable{Union{T,Nothing}},
+    id::T,
+    style::CurrentStyle
+)::Button where {T<:Enum{<:Integer}}
+    buttoncolor = @lift begin
+        $state == id ? $(style.enabledbuttoncolor) : $(style.disabledbuttoncolor)
+    end
+    buttoncolor_hover = @lift begin
+        $state == id ? $(style.enabledbuttoncolor_hover) : $(style.disabledbuttoncolor_hover)
+    end
+    buttoncolor_active = @lift begin
+        $state == id ? $(style.enabledbuttoncolor_active) : $(style.disabledbuttoncolor_active)
+    end
+    labelcolor = @lift begin
+        $state == id ? $(style.enabledbuttonlabelcolor) : $(style.disabledbuttonlabelcolor)
+    end
+
+    button = Button(
+        target;
+        label=label,
+        tellheight=true,
+        padding=[12, 2, 2, 2],
+        strokewidth=1,
+        buttoncolor=buttoncolor,
+        buttoncolor_hover=buttoncolor_hover,
+        buttoncolor_active=buttoncolor_active,
+        strokecolor=:transparent,
+        font=:juliamono_light,
+        fontsize=FONT_SIZE,
+        labelcolor=labelcolor,
+        labelcolor_active=labelcolor,
+        labelcolor_hover=labelcolor,
+        cornerradius=5,
+    )
+
+    on(button.clicks) do _c
+        if state[] == id
+            state[] = nothing
+        else
+            state[] = id
+        end
+        # notify(state)
+    end
+
+    button
+end
+
 function tagexclusive(
     target, label, state::Observable{Vector{Bool}}, index::Integer, style::CurrentStyle;
 )::Button
@@ -31,7 +91,7 @@ function tagexclusive(
         buttoncolor_active=buttoncolor_active,
         strokecolor=:transparent,
         font=:juliamono_light,
-        fontsize=13.8,
+        fontsize=FONT_SIZE,
         labelcolor=labelcolor,
         labelcolor_active=labelcolor,
         labelcolor_hover=labelcolor,
@@ -80,7 +140,7 @@ function tag(
         buttoncolor_active=buttoncolor_active,
         strokecolor=:transparent,
         font=:juliamono_light,
-        fontsize=13.8,
+        fontsize=FONT_SIZE,
         labelcolor=labelcolor,
         labelcolor_active=labelcolor,
         labelcolor_hover=labelcolor,
@@ -122,7 +182,7 @@ function tagpositive(
         buttoncolor_active=buttoncolor_active,
         strokecolor=:transparent,
         font=:juliamono_light,
-        fontsize=13.8,
+        fontsize=FONT_SIZE,
         labelcolor=labelcolor,
         labelcolor_active=labelcolor,
         labelcolor_hover=labelcolor,
@@ -164,7 +224,7 @@ function tagnegative(
         buttoncolor_active=buttoncolor_active,
         strokecolor=:transparent,
         font=:juliamono_light,
-        fontsize=13.8,
+        fontsize=FONT_SIZE,
         labelcolor=labelcolor,
         labelcolor_active=labelcolor,
         labelcolor_hover=labelcolor,
@@ -200,6 +260,16 @@ function separator(target::GridPosition, style::CurrentStyle)::Box
         color=style.enabledbuttoncolor,
         height=SEPARATOR_HEIGHT,
         width=SEPARATOR_WIDTH,
+        strokevisible=false
+    )
+end
+
+function blankseparator(target::GridPosition)::Box
+    Box(
+        target,
+        color=RGBA(0, 0, 0, 0),
+        height=0,
+        width=0,
         strokevisible=false
     )
 end

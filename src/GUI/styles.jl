@@ -1,17 +1,21 @@
 using Parameters
 using GLMakie
 
+include("utils.jl")
+
 const BUTTON_HEIGHT = 28.0
 const SEPARATOR_HEIGHT = 15.8
 const SEPARATOR_WIDTH = 2.0
 const LAYOUT_PADDING = 2.0
 const TOP_BAR_HEIGHT = BUTTON_HEIGHT + 2LAYOUT_PADDING
+const FONT_SIZE = 13.8
+const HEADER_FONT_SIZE = 18.5
 
 abstract type Style end
 
 @with_kw struct DarkStyle <: Style
     theme::Attributes = theme_black()
-    background::RGBA = colorant"gray7"
+    background::RGBA = colorant"gray3"
     ticklabelcolor::RGBA = colorant"gray93"
     flexpointcolor::RGBA = colorant"steelblue1"
     signalcolor::RGBA = colorant"sienna1"
