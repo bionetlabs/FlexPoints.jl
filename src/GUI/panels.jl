@@ -46,8 +46,18 @@ end
 
 function drawsources(appstate::AppState)
     target = appstate.leftpanel
-    header(target[1, 1], "⛁ sources", currentstyle(appstate))
-    expander(target[2, 1])
+    index = Ref(0)
+    style = currentstyle(appstate)
+    header(target[nextint(index), 1], "⛁ sources", style)
+    list(
+        target,
+        listfiles(),
+        index,
+        Observable([true, false, false]),
+        1,
+        style
+    )
+    expander(target[nextint(index), 1])
 end
 
 function drawsamples(appstate::AppState)

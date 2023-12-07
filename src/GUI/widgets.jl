@@ -14,6 +14,21 @@ function header(target, label, style::CurrentStyle)
     )
 end
 
+function text(target, label, style::CurrentStyle; color=nothing)::Label
+    color = if isnothing(color)
+        style.disabledbuttonlabelcolor
+    else
+        color
+    end
+    Label(
+        target,
+        label,
+        font=:juliamono_light,
+        fontsize=FONT_SIZE,
+        color=color
+    )
+end
+
 function tagenum(
     target,
     label,
@@ -276,4 +291,20 @@ end
 
 function expander(target::GridPosition)::Box
     Box(target, color=RGBAf(0, 0, 0, 0), strokevisible=false)
+end
+
+function list(
+    target,
+    collection,
+    layoutindex::Ref{<:Integer},
+    state::Observable{Vector{Bool}},
+    index::Int,
+    style::CurrentStyle
+)
+    for element in collection
+        i = nextint(layoutindex)
+        tagexclusive(target[i, 1], string(element), state, index, style)
+        # Box(target[i, 1], cornerradius=20, linestyle=:dot, color=style.disabledbuttoncolor)
+        # text(target[i, 1], string(element), style)
+    end
 end

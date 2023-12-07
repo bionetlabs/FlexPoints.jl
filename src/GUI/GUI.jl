@@ -159,7 +159,7 @@ function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resol
         Styles(),
         Ref{Union{Nothing,Axis}}(nothing),
         primary_resolution(),
-        Dict{Symbol,DataFrame}()
+        Dict{String,DataFrame}()
     )
 
     drawmenu(appstate)

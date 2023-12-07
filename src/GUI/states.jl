@@ -36,7 +36,7 @@ mutable struct AppState
     styles::Styles
     graph::Ref{Union{Nothing,Axis}}
     resolution::Tuple{Integer,Integer}
-    data::Dict{Symbol,DataFrame}
+    data::Dict{String,DataFrame}
 end
 
 function applystyle(appstate::AppState)
