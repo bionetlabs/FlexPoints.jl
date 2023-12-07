@@ -239,16 +239,16 @@ function tagnegative(
     button
 end
 
-function daynight(uistate::UIState, target1::GridPosition, target2::GridPosition)::Tuple{Button,Button}
-    nightmode = uistate.nightmode
+function daynight(appstate::AppState, target1::GridPosition, target2::GridPosition)::Tuple{Button,Button}
+    nightmode = appstate.nightmode
 
-    darkbutton = tagpositive(target1, "☽ dark mode", nightmode, currentstyle(uistate))
+    darkbutton = tagpositive(target1, "☽ dark mode", nightmode, currentstyle(appstate))
     on(darkbutton.clicks) do _
-        applystyle(uistate)
+        applystyle(appstate)
     end
-    lightbutton = tagnegative(target2, "☼ light mode", nightmode, currentstyle(uistate))
+    lightbutton = tagnegative(target2, "☼ light mode", nightmode, currentstyle(appstate))
     on(lightbutton.clicks) do _
-        applystyle(uistate)
+        applystyle(appstate)
     end
 
     darkbutton, lightbutton

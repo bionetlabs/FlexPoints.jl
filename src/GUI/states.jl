@@ -25,7 +25,7 @@ mutable struct TopBarState
     rightpanel::Observable{Union{RightPanelState,Nothing}}
 end
 
-mutable struct UIState
+mutable struct AppState
     figure::Figure
     topbar::TopBarState
     leftpanel::GridLayout
@@ -36,17 +36,13 @@ mutable struct UIState
     styles::Styles
     graph::Ref{Union{Nothing,Axis}}
     resolution::Tuple{Integer,Integer}
+    data::Dict{Symbol,DataFrame}
 end
 
-mutable struct AppState
-    ui::UIState
-    data::DataFrame
-end
-
-function applystyle(uistate::UIState)
-    figure = uistate.figure
-    nightmode = uistate.nightmode[]
-    styles = uistate.styles
+function applystyle(appstate::AppState)
+    figure = appstate.figure
+    nightmode = appstate.nightmode[]
+    styles = appstate.styles
     axis = figure.current_axis[]
     backgroundcolor = figure.scene.backgroundcolor
 
@@ -71,4 +67,4 @@ function applystyle(uistate::UIState)
     end
 end
 
-currentstyle(uistate::UIState)::CurrentStyle = uistate.styles.current
+currentstyle(appstate::AppState)::CurrentStyle = appstate.styles.current

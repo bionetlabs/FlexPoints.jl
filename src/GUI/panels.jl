@@ -3,36 +3,36 @@ using GLMakie
 
 include("widgets.jl")
 
-function drawpanels(uistate::UIState)
-    drawleftpanel(uistate)
-    on(uistate.topbar.leftpanel) do _state
-        drawleftpanel(uistate)
+function drawpanels(appstate::AppState)
+    drawleftpanel(appstate)
+    on(appstate.topbar.leftpanel) do _state
+        drawleftpanel(appstate)
     end
-    drawrightpanel(uistate)
-    on(uistate.topbar.rightpanel) do _state
-        drawrightpanel(uistate)
+    drawrightpanel(appstate)
+    on(appstate.topbar.rightpanel) do _state
+        drawrightpanel(appstate)
     end
 end
 
-function drawleftpanel(uistate::UIState)
-    state = uistate.topbar.leftpanel[]
-    panel = uistate.leftpanel
+function drawleftpanel(appstate::AppState)
+    state = appstate.topbar.leftpanel[]
+    panel = appstate.leftpanel
     clearpanel!(panel)
     @match state begin
-        $sources => drawsources(uistate)
-        $samples => drawsamples(uistate)
-        $algorithms => drawalgorithms(uistate)
+        $sources => drawsources(appstate)
+        $samples => drawsamples(appstate)
+        $algorithms => drawalgorithms(appstate)
         nothing => nothing
     end
 end
 
-function drawrightpanel(uistate::UIState)
-    state = uistate.topbar.rightpanel[]
-    panel = uistate.rightpanel
+function drawrightpanel(appstate::AppState)
+    state = appstate.topbar.rightpanel[]
+    panel = appstate.rightpanel
     clearpanel!(panel)
     @match state begin
-        $results => drawresults(uistate)
-        $settings => drawsettings(uistate)
+        $results => drawresults(appstate)
+        $settings => drawsettings(appstate)
         nothing => nothing
     end
 end
@@ -44,32 +44,32 @@ function clearpanel!(panel::GridLayout)
     trim!(panel)
 end
 
-function drawsources(uistate::UIState)
-    target = uistate.leftpanel
-    header(target[1, 1], "⛁ sources", currentstyle(uistate))
+function drawsources(appstate::AppState)
+    target = appstate.leftpanel
+    header(target[1, 1], "⛁ sources", currentstyle(appstate))
     expander(target[2, 1])
 end
 
-function drawsamples(uistate::UIState)
-    target = uistate.leftpanel
-    header(target[1, 1], "𝝣 samples", currentstyle(uistate))
+function drawsamples(appstate::AppState)
+    target = appstate.leftpanel
+    header(target[1, 1], "𝝣 samples", currentstyle(appstate))
     expander(target[2, 1])
 end
 
-function drawalgorithms(uistate::UIState)
-    target = uistate.leftpanel
-    header(target[1, 1], "∂ algorithms", currentstyle(uistate))
+function drawalgorithms(appstate::AppState)
+    target = appstate.leftpanel
+    header(target[1, 1], "∂ algorithms", currentstyle(appstate))
     expander(target[2, 1])
 end
 
-function drawresults(uistate::UIState)
-    target = uistate.rightpanel
-    header(target[1, 1], "ஃ results", currentstyle(uistate))
+function drawresults(appstate::AppState)
+    target = appstate.rightpanel
+    header(target[1, 1], "ஃ results", currentstyle(appstate))
     expander(target[2, 1])
 end
 
-function drawsettings(uistate::UIState)
-    target = uistate.rightpanel
-    header(target[1, 1], "🞿 settings", currentstyle(uistate))
+function drawsettings(appstate::AppState)
+    target = appstate.rightpanel
+    header(target[1, 1], "🞿 settings", currentstyle(appstate))
     expander(target[2, 1])
 end

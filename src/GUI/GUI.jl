@@ -16,55 +16,54 @@ include("data.jl")
 function gui(;
     resolution=primary_resolution(), darkmode=true
 )
-    uistate = initui(darkmode, resolution)
-    appstate = AppState(uistate, DataFrame())
+    appstate = initui(darkmode, resolution)
 
-    uistate.figure
+    appstate.figure
 end
 
-function drawmenu(uistate::UIState)
-    topbar = uistate.topbar
+function drawmenu(appstate::AppState)
+    topbar = appstate.topbar
     layout = topbar.layout
-    style = currentstyle(uistate)
+    style = currentstyle(appstate)
     index = Ref(0)
 
     sourcesbutton = tagenum(layout[1, nextint(index)], "⛁ sources", topbar.leftpanel, sources, style)
-    panelcontrol(uistate, sourcesbutton, leftpanel)
+    panelcontrol(appstate, sourcesbutton, leftpanel)
     samplesbutton = tagenum(layout[1, nextint(index)], "𝝣 samples", topbar.leftpanel, samples, style)
-    panelcontrol(uistate, samplesbutton, leftpanel)
+    panelcontrol(appstate, samplesbutton, leftpanel)
     algorithmsbutton = tagenum(layout[1, nextint(index)], "∂ algorithms", topbar.leftpanel, algorithms, style)
-    panelcontrol(uistate, algorithmsbutton, leftpanel)
+    panelcontrol(appstate, algorithmsbutton, leftpanel)
 
     expander(layout[1, nextint(index)])
-    daynight(uistate, layout[1, nextint(index)], layout[1, nextint(index)])
+    daynight(appstate, layout[1, nextint(index)], layout[1, nextint(index)])
     expander(layout[1, nextint(index)])
 
     resultsbutton = tagenum(layout[1, nextint(index)], "ஃ results", topbar.rightpanel, results, style)
-    panelcontrol(uistate, resultsbutton, rightpanel)
+    panelcontrol(appstate, resultsbutton, rightpanel)
     settingsbutton = tagenum(layout[1, nextint(index)], "🞿 settings", topbar.rightpanel, settings, style)
-    panelcontrol(uistate, settingsbutton, rightpanel)
+    panelcontrol(appstate, settingsbutton, rightpanel)
 
     # separator(layout[1, nextint(index)], style)
 end
 
-function panelcontrol(uistate::UIState, button::Button, panelindex::PanelIndex)
-    topbar = uistate.topbar
+function panelcontrol(appstate::AppState, button::Button, panelindex::PanelIndex)
+    topbar = appstate.topbar
     on(button.clicks) do _
         panel = @match panelindex begin
             $leftpanel => topbar.leftpanel[]
             $rightpanel => topbar.rightpanel[]
         end
         if isnothing(panel)
-            colsize!(uistate.figure.layout, Int(panelindex), Relative(0.0))
+            colsize!(appstate.figure.layout, Int(panelindex), Relative(0.0))
         else
-            colsize!(uistate.figure.layout, Int(panelindex), Relative(0.1))
+            colsize!(appstate.figure.layout, Int(panelindex), Relative(0.1))
         end
     end
 end
 
-function drawgraph(uistate::UIState)::Axis
-    figure = uistate.centralpanel
-    style = currentstyle(uistate)
+function drawgraph(appstate::AppState)::Axis
+    figure = appstate.centralpanel
+    style = currentstyle(appstate)
 
     axis = Axis(
         figure[:, :],
@@ -102,11 +101,11 @@ function drawgraph(uistate::UIState)::Axis
         strokecolor=style.disabledbuttoncolor
     )
 
-    uistate.graph[] = axis
+    appstate.graph[] = axis
     axis
 end
 
-function initui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution())::UIState
+function initui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution())::AppState
     GLMakie.activate!(;
         fullscreen=true,
         framerate=120,
@@ -118,7 +117,7 @@ function initui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resol
     makeui(darkmode, resolution)
 end
 
-function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution())::UIState
+function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution())::AppState
     if darkmode
         set_theme!(theme_black(), size=resolution)
     else
@@ -149,7 +148,7 @@ function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resol
     # rowsize!(leftpanel, 1, Relative(1.0))
     # rowsize!(rightpanel, 1, Relative(1.0))
 
-    uistate = UIState(
+    appstate = AppState(
         figure,
         topbar,
         leftpanel,
@@ -159,15 +158,16 @@ function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resol
         Observable(true),
         Styles(),
         Ref{Union{Nothing,Axis}}(nothing),
-        primary_resolution()
+        primary_resolution(),
+        Dict{Symbol,DataFrame}()
     )
 
-    drawmenu(uistate)
-    drawpanels(uistate)
-    drawgraph(uistate)
-    applystyle(uistate)
+    drawmenu(appstate)
+    drawpanels(appstate)
+    drawgraph(appstate)
+    applystyle(appstate)
 
-    uistate
+    appstate
 end
 
 function primary_resolution()
