@@ -34,22 +34,18 @@ function applystyle(uistate::UIState)
     backgroundcolor = figure.scene.backgroundcolor
 
     if nightmode
-        println("theme dark")
         style = styles.dark
         updatestyle!(styles.current, style)
         for (key, value) in style.theme.Axis
-            println("updating $key => $(value[])")
             getproperty(axis, key)[] = parseattribute(value[])
         end
         backgroundcolor[] = style.background
         axis.xlabelcolor[] = axis.ylabelcolor[] = style.ticklabelcolor
         axis.xticklabelcolor[] = axis.yticklabelcolor[] = style.ticklabelcolor
     else
-        println("theme light")
         style = styles.light
         updatestyle!(styles.current, style)
         for (key, value) in style.theme.Axis
-            println("updating $key => $(value[])")
             getproperty(figure.current_axis[], key)[] = parseattribute(value[])
         end
         backgroundcolor[] = style.background

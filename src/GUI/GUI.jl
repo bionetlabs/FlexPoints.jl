@@ -24,14 +24,18 @@ end
 function drawmenu(uistate::UIState)
     topbar = uistate.topbar
     layout = topbar.layout
+    style = currentstyle(uistate)
 
-    daynight(uistate)
-    tagexclusive(layout[1, 2], "▤ dataload", topbar.state, 1)
-    tagexclusive(layout[1, 3], "⛁ data", topbar.state, 2)
-    tagexclusive(layout[1, 4], "❉ data", topbar.state, 3)
-    tagexclusive(layout[1, 5], " data", topbar.state, 4)
-    tag(layout[1, 6], "䷀ 3D ䷀", Observable(true))
-    Box(layout[1, 7], color=RGBAf(0, 0, 0, 0), height=BUTTON_HEIGHT, strokevisible=false)
+    expander(layout[1, 1])
+    daynight(uistate, layout[1, 2], layout[1, 3])
+    separator(layout[1, 4], style)
+    tagexclusive(layout[1, 5], "▤ dataload", topbar.state, 1, style)
+    tagexclusive(layout[1, 6], "⛁ data", topbar.state, 2, style)
+    tagexclusive(layout[1, 7], "❉ data", topbar.state, 3, style)
+    tagexclusive(layout[1, 8], " data", topbar.state, 4, style)
+    separator(layout[1, 9], style)
+    tag(layout[1, 10], "䷀ 3D ䷀", Observable(true), style)
+    expander(layout[1, 11])
 end
 
 function drawgraph(uistate::UIState)::Axis
@@ -57,13 +61,22 @@ function drawgraph(uistate::UIState)::Axis
     xs = LinRange(0, 100, 1000)
     ys = 1.5 .* sin.(xs)
 
-    signallines = scatterlines!(axis, xs, ys, color=style.signalcolor, markersize=0)
+    signallines = lines!(axis, xs, ys, color=style.signalcolor)
 
     data = collect(zip(xs, ys))
     indices = flexpoints(data, (true, true, true, true))
     points = [data[i...] for i in indices]
 
-    flexpointslines = scatterlines!(axis, points, color=style.flexpointcolor, markersize=12, linestyle=:dot)
+    flexpointslines = scatterlines!(
+        axis,
+        points,
+        color=style.flexpointcolor,
+        linestyle=:dot,
+        markersize=12,
+        marker=:rect,
+        strokewidth=0.5,
+        strokecolor=style.disabledbuttoncolor
+    )
 
     uistate.graph[] = axis
     axis

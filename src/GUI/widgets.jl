@@ -5,12 +5,20 @@ using Match
 include("states.jl")
 
 function tagexclusive(
-    target, label, state::Observable{Vector{Bool}}, index::Integer;
+    target, label, state::Observable{Vector{Bool}}, index::Integer, style::CurrentStyle;
 )::Button
-    buttoncolor = lift(x -> x[index] ? :ivory3 : :gray7, state)
-    buttoncolor_hover = lift(x -> x[index] ? :ivory2 : :gray14, state)
-    buttoncolor_active = lift(x -> x[index] ? :ivory1 : :gray21, state)
-    labelcolor = lift(x -> x[index] ? :gray8 : :gray95, state)
+    buttoncolor = @lift begin
+        $(state)[index] ? $(style.enabledbuttoncolor) : $(style.disabledbuttoncolor)
+    end
+    buttoncolor_hover = @lift begin
+        $(state)[index] ? $(style.enabledbuttoncolor_hover) : $(style.disabledbuttoncolor_hover)
+    end
+    buttoncolor_active = @lift begin
+        $(state)[index] ? $(style.enabledbuttoncolor_active) : $(style.disabledbuttoncolor_active)
+    end
+    labelcolor = @lift begin
+        $(state)[index] ? $(style.enabledbuttonlabelcolor) : $(style.disabledbuttonlabelcolor)
+    end
 
     button = Button(
         target;
@@ -46,12 +54,20 @@ function tagexclusive(
 end
 
 function tag(
-    target, label, state::Observable{Bool};
+    target, label, state::Observable{Bool}, style::CurrentStyle;
 )::Button
-    buttoncolor = lift(x -> x ? :ivory3 : :gray7, state)
-    buttoncolor_hover = lift(x -> x ? :ivory2 : :gray14, state)
-    buttoncolor_active = lift(x -> x ? :ivory1 : :gray21, state)
-    labelcolor = lift(x -> x ? :gray8 : :gray95, state)
+    buttoncolor = @lift begin
+        $(state) ? $(style.enabledbuttoncolor) : $(style.disabledbuttoncolor)
+    end
+    buttoncolor_hover = @lift begin
+        $(state) ? $(style.enabledbuttoncolor_hover) : $(style.disabledbuttoncolor_hover)
+    end
+    buttoncolor_active = @lift begin
+        $(state) ? $(style.enabledbuttoncolor_active) : $(style.disabledbuttoncolor_active)
+    end
+    labelcolor = @lift begin
+        $(state) ? $(style.enabledbuttonlabelcolor) : $(style.disabledbuttonlabelcolor)
+    end
 
     button = Button(
         target;
@@ -66,8 +82,8 @@ function tag(
         font=:juliamono_light,
         fontsize=13.8,
         labelcolor=labelcolor,
-        labelcolor_hover=labelcolor,
         labelcolor_active=labelcolor,
+        labelcolor_hover=labelcolor,
         cornerradius=5,
     )
 
@@ -79,21 +95,115 @@ function tag(
     button
 end
 
-function daynight(uistate::UIState)::Button
-    target = uistate.topbar.layout[1, 1]
-    nightmode = uistate.nightmode
-
-    label = lift(nightmode) do state
-        @match state begin
-            false => "☼ light mode"
-            true => "☽ dark mode"
-        end
+function tagpositive(
+    target, label, state::Observable{Bool}, style::CurrentStyle;
+)::Button
+    buttoncolor = @lift begin
+        $(state) ? $(style.enabledbuttoncolor) : $(style.disabledbuttoncolor)
     end
-    button = tag(target, label, nightmode)
+    buttoncolor_hover = @lift begin
+        $(state) ? $(style.enabledbuttoncolor_hover) : $(style.disabledbuttoncolor_hover)
+    end
+    buttoncolor_active = @lift begin
+        $(state) ? $(style.enabledbuttoncolor_active) : $(style.disabledbuttoncolor_active)
+    end
+    labelcolor = @lift begin
+        $(state) ? $(style.enabledbuttonlabelcolor) : $(style.disabledbuttonlabelcolor)
+    end
 
-    on(button.clicks) do _
-        applystyle(uistate)
+    button = Button(
+        target;
+        label=label,
+        tellheight=true,
+        padding=[12, 2, 2, 2],
+        strokewidth=1,
+        buttoncolor=buttoncolor,
+        buttoncolor_hover=buttoncolor_hover,
+        buttoncolor_active=buttoncolor_active,
+        strokecolor=:transparent,
+        font=:juliamono_light,
+        fontsize=13.8,
+        labelcolor=labelcolor,
+        labelcolor_active=labelcolor,
+        labelcolor_hover=labelcolor,
+        cornerradius=5,
+    )
+
+    on(button.clicks) do _c
+        state[] = true
+        notify(state)
     end
 
     button
+end
+
+function tagnegative(
+    target, label, state::Observable{Bool}, style::CurrentStyle;
+)::Button
+    buttoncolor = @lift begin
+        !$(state) ? $(style.enabledbuttoncolor) : $(style.disabledbuttoncolor)
+    end
+    buttoncolor_hover = @lift begin
+        !$(state) ? $(style.enabledbuttoncolor_hover) : $(style.disabledbuttoncolor_hover)
+    end
+    buttoncolor_active = @lift begin
+        !$(state) ? $(style.enabledbuttoncolor_active) : $(style.disabledbuttoncolor_active)
+    end
+    labelcolor = @lift begin
+        !$(state) ? $(style.enabledbuttonlabelcolor) : $(style.disabledbuttonlabelcolor)
+    end
+
+    button = Button(
+        target;
+        label=label,
+        tellheight=true,
+        padding=[12, 2, 2, 2],
+        strokewidth=1,
+        buttoncolor=buttoncolor,
+        buttoncolor_hover=buttoncolor_hover,
+        buttoncolor_active=buttoncolor_active,
+        strokecolor=:transparent,
+        font=:juliamono_light,
+        fontsize=13.8,
+        labelcolor=labelcolor,
+        labelcolor_active=labelcolor,
+        labelcolor_hover=labelcolor,
+        cornerradius=5,
+    )
+
+    on(button.clicks) do _c
+        state[] = false
+        notify(state)
+    end
+
+    button
+end
+
+function daynight(uistate::UIState, target1::GridPosition, target2::GridPosition)::Tuple{Button,Button}
+    nightmode = uistate.nightmode
+
+    darkbutton = tagpositive(target1, "☽ dark mode", nightmode, currentstyle(uistate))
+    on(darkbutton.clicks) do _
+        applystyle(uistate)
+    end
+    lightbutton = tagnegative(target2, "☼ light mode", nightmode, currentstyle(uistate))
+    on(lightbutton.clicks) do _
+        applystyle(uistate)
+    end
+
+    darkbutton, lightbutton
+end
+
+function separator(target::GridPosition, style::CurrentStyle)::Box
+    Box(
+        target,
+        color=style.enabledbuttoncolor,
+        height=SEPARATOR_HEIGHT,
+        width=SEPARATOR_WIDTH,
+        strokevisible=false
+    )
+end
+
+function expander(target::GridPosition)::Box
+    Box(target, color=RGBAf(0, 0, 0, 0), strokevisible=false)
 end
