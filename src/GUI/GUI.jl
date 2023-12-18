@@ -172,7 +172,12 @@ function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resol
 
     datasources!(appstate, listfiles(DEFAULT_DATA_DIR))
     dataframe!(appstate)
+    updategraph!(appstate)
 
+    appstate
+end
+
+function updategraph!(appstate::AppState)
     for state in values(appstate.series)
         if state[]
             drawgraph!(appstate)
@@ -181,8 +186,11 @@ function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resol
             state && drawgraph!(appstate)
         end
     end
-
-    appstate
+    for state in values(appstate.datasources)
+        on(state) do state
+            state && drawgraph!(appstate)
+        end
+    end
 end
 
 function primary_resolution()
