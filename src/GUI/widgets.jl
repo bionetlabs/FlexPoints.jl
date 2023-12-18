@@ -1,6 +1,7 @@
 using GLMakie
 using Colors
 using Match
+using OrderedCollections
 
 include("states.jl")
 
@@ -74,6 +75,57 @@ function tagenum(
             state[] = id
         end
         # notify(state)
+    end
+
+    button
+end
+
+function tagdict(
+    target, label, state::OrderedDict{Symbol,Observable{Bool}}, current::Symbol, style::CurrentStyle;
+)::Button
+    currentstate = state[current]
+    buttoncolor = @lift begin
+        $currentstate ? $(style.enabledbuttoncolor) : $(style.disabledbuttoncolor)
+    end
+    buttoncolor_hover = @lift begin
+        $currentstate ? $(style.enabledbuttoncolor_hover) : $(style.disabledbuttoncolor_hover)
+    end
+    buttoncolor_active = @lift begin
+        $currentstate ? $(style.enabledbuttoncolor_active) : $(style.disabledbuttoncolor_active)
+    end
+    labelcolor = @lift begin
+        $currentstate ? $(style.enabledbuttonlabelcolor) : $(style.disabledbuttonlabelcolor)
+    end
+
+    button = Button(
+        target;
+        label=label,
+        tellheight=true,
+        padding=[12, 2, 2, 2],
+        strokewidth=1,
+        buttoncolor=buttoncolor,
+        buttoncolor_hover=buttoncolor_hover,
+        buttoncolor_active=buttoncolor_active,
+        strokecolor=:transparent,
+        font=:juliamono_light,
+        fontsize=FONT_SIZE,
+        labelcolor=labelcolor,
+        labelcolor_active=labelcolor,
+        labelcolor_hover=labelcolor,
+        cornerradius=5,
+    )
+
+    on(button.clicks) do _c
+        currentstate[] = !currentstate[]
+        if currentstate[]
+            for key in keys(state)
+                if key != current
+                    state[key][] = false
+                    notify(state[key])
+                end
+            end
+        end
+        notify(currentstate)
     end
 
     button
@@ -259,11 +311,11 @@ function daynight(appstate::AppState, target1::GridPosition, target2::GridPositi
 
     darkbutton = tagpositive(target1, "☽ dark mode", nightmode, currentstyle(appstate))
     on(darkbutton.clicks) do _
-        applystyle(appstate)
+        applystyle!(appstate)
     end
     lightbutton = tagnegative(target2, "☼ light mode", nightmode, currentstyle(appstate))
     on(lightbutton.clicks) do _
-        applystyle(appstate)
+        applystyle!(appstate)
     end
 
     darkbutton, lightbutton
@@ -295,16 +347,30 @@ end
 
 function list(
     target,
-    collection,
     layoutindex::Ref{<:Integer},
-    state::Observable{Vector{Bool}},
-    index::Int,
+    collection::OrderedDict{Symbol,Observable{Bool}},
     style::CurrentStyle
 )
-    for element in collection
+    for key in keys(collection)
         i = nextint(layoutindex)
-        tagexclusive(target[i, 1], string(element), state, index, style)
-        # Box(target[i, 1], cornerradius=20, linestyle=:dot, color=style.disabledbuttoncolor)
-        # text(target[i, 1], string(element), style)
+        tagdict(target[i, 1], string(key), collection, key, style)
+    end
+end
+
+function gridlist(
+    target,
+    rowindex::Ref{<:Integer},
+    collection::OrderedDict{Symbol,Observable{Bool}},
+    style::CurrentStyle;
+    rowitems=2
+)
+    colindex = 1
+    @time for (i, key) in enumerate(keys(collection))
+        if i % rowitems == 1
+            nextint(rowindex)
+            colindex = 1
+        end
+        tagdict(target[rowindex[], colindex], string(key), collection, key, style)
+        colindex += 1
     end
 end

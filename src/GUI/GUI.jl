@@ -21,7 +21,7 @@ function gui(;
     appstate.figure
 end
 
-function drawmenu(appstate::AppState)
+function drawmenu!(appstate::AppState)
     topbar = appstate.topbar
     layout = topbar.layout
     style = currentstyle(appstate)
@@ -61,9 +61,8 @@ function panelcontrol(appstate::AppState, button::Button, panelindex::PanelIndex
     end
 end
 
-function drawgraph(appstate::AppState)::Axis
+function emptygraph!(appstate::AppState)::Axis
     figure = appstate.centralpanel
-    style = currentstyle(appstate)
 
     axis = Axis(
         figure[:, :],
@@ -73,7 +72,7 @@ function drawgraph(appstate::AppState)::Axis
         xrectzoom=false,
         yrectzoom=false,
         valign=:center,
-        limits=(0, 50, -2, 2),
+        limits=((0, 1350), (-3.5, 3.5)),
         xlabelfont=:juliamono_light,
         xticklabelfont=:juliamono_light,
         ylabelfont=:juliamono_light,
@@ -81,16 +80,27 @@ function drawgraph(appstate::AppState)::Axis
     )
     hidespines!(axis)
 
-    xs = LinRange(0, 100, 1000)
-    ys = 1.5 .* sin.(xs)
+    appstate.graph[] = axis
+    axis
+end
 
-    signallines = lines!(axis, xs, ys, color=style.signalcolor)
+function drawgraph!(appstate::AppState)::Axis
+    appstate.centralpanel
+    style = currentstyle(appstate)
+    axis = appstate.graph[]
+    empty!(axis)
+
+    data = appstate.data[]
+    xs = LinRange(0, (length(data) - 1) / SAMPES_PER_MILLISECOND, length(data))
+    ys = data
+
+    lines!(axis, xs, ys, color=style.signalcolor)
 
     data = collect(zip(xs, ys))
     indices = flexpoints(data, (true, true, true, true))
     points = [data[i...] for i in indices]
 
-    flexpointslines = scatterlines!(
+    scatterlines!(
         axis,
         points,
         color=style.flexpointcolor,
@@ -145,27 +155,32 @@ function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resol
     rowsize!(figure.layout, 2, Auto(false))
     rowsize!(figure.layout, 3, Fixed(TOP_BAR_HEIGHT))
 
-    # rowsize!(leftpanel, 1, Relative(1.0))
-    # rowsize!(rightpanel, 1, Relative(1.0))
-
     appstate = AppState(
-        figure,
-        topbar,
-        leftpanel,
-        centralpanel,
-        rightpanel,
-        bottombar,
-        Observable(true),
-        Styles(),
-        Ref{Union{Nothing,Axis}}(nothing),
-        primary_resolution(),
-        Dict{String,DataFrame}()
+        figure=figure,
+        topbar=topbar,
+        leftpanel=leftpanel,
+        centralpanel=centralpanel,
+        rightpanel=rightpanel,
+        bottombar=bottombar,
+        resolution=primary_resolution(),
     )
 
-    drawmenu(appstate)
-    drawpanels(appstate)
-    drawgraph(appstate)
-    applystyle(appstate)
+    drawmenu!(appstate)
+    emptygraph!(appstate)
+    drawpanels!(appstate)
+    applystyle!(appstate)
+
+    datasources!(appstate, listfiles(DEFAULT_DATA_DIR))
+    dataframe!(appstate)
+
+    for state in values(appstate.series)
+        if state[]
+            drawgraph!(appstate)
+        end
+        on(state) do state
+            state && drawgraph!(appstate)
+        end
+    end
 
     appstate
 end

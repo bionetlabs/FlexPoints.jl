@@ -1,32 +1,33 @@
 using Match
 using GLMakie
+using Parameters
 
 include("widgets.jl")
 
-function drawpanels(appstate::AppState)
-    drawleftpanel(appstate)
+function drawpanels!(appstate::AppState)
+    drawleftpanel!(appstate)
     on(appstate.topbar.leftpanel) do _state
-        drawleftpanel(appstate)
+        drawleftpanel!(appstate)
     end
-    drawrightpanel(appstate)
+    drawrightpanel!(appstate)
     on(appstate.topbar.rightpanel) do _state
-        drawrightpanel(appstate)
+        drawrightpanel!(appstate)
     end
 end
 
-function drawleftpanel(appstate::AppState)
+function drawleftpanel!(appstate::AppState)
     state = appstate.topbar.leftpanel[]
     panel = appstate.leftpanel
     clearpanel!(panel)
     @match state begin
-        $sources => drawsources(appstate)
+        $sources => drawsources!(appstate)
         $samples => drawsamples(appstate)
         $algorithms => drawalgorithms(appstate)
         nothing => nothing
     end
 end
 
-function drawrightpanel(appstate::AppState)
+function drawrightpanel!(appstate::AppState)
     state = appstate.topbar.rightpanel[]
     panel = appstate.rightpanel
     clearpanel!(panel)
@@ -44,26 +45,32 @@ function clearpanel!(panel::GridLayout)
     trim!(panel)
 end
 
-function drawsources(appstate::AppState)
-    target = appstate.leftpanel
+function drawsources!(appstate::AppState)
+    @unpack leftpanel, datasources = appstate
     index = Ref(0)
     style = currentstyle(appstate)
-    header(target[nextint(index), 1], "⛁ sources", style)
+    header(leftpanel[nextint(index), 1], "⛁ sources", style)
     list(
-        target,
-        listfiles(),
+        leftpanel,
         index,
-        Observable([true, false, false]),
-        1,
+        datasources,
         style
     )
-    expander(target[nextint(index), 1])
+    expander(leftpanel[nextint(index), 1])
 end
 
 function drawsamples(appstate::AppState)
-    target = appstate.leftpanel
-    header(target[1, 1], "𝝣 samples", currentstyle(appstate))
-    expander(target[2, 1])
+    @unpack leftpanel, series = appstate
+    index = Ref(0)
+    style = currentstyle(appstate)
+    header(leftpanel[nextint(index), :], "𝝣 samples", style)
+    list(
+        leftpanel,
+        index,
+        series,
+        style
+    )
+    expander(leftpanel[nextint(index), :])
 end
 
 function drawalgorithms(appstate::AppState)
