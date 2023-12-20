@@ -88,6 +88,7 @@ function drawgraph!(appstate::AppState)::Axis
     appstate.centralpanel
     style = currentstyle(appstate)
     axis = appstate.graph[]
+    targetlimits = axis.targetlimits[]
     empty!(axis)
 
     data = appstate.data[]
@@ -96,8 +97,10 @@ function drawgraph!(appstate::AppState)::Axis
 
     lines!(axis, xs, ys, color=style.signalcolor)
 
+
     data = collect(zip(xs, ys))
-    indices = flexpoints(data, (true, true, true, true))
+    @unpack ∂1, ∂2, ∂3, ∂4 = appstate.flexpoints
+    indices = flexpoints(data, (∂1[], ∂2[], ∂3[], ∂4[]))
     points = [data[i...] for i in indices]
 
     scatterlines!(
@@ -108,10 +111,10 @@ function drawgraph!(appstate::AppState)::Axis
         markersize=12,
         marker=:rect,
         strokewidth=0.5,
-        strokecolor=style.disabledbuttoncolor
+        strokecolor=style.disabledbuttoncolor,
     )
+    axis.targetlimits[] = targetlimits
 
-    appstate.graph[] = axis
     axis
 end
 
@@ -189,6 +192,13 @@ function updategraph!(appstate::AppState)
     for state in values(appstate.datasources)
         on(state) do state
             state && drawgraph!(appstate)
+        end
+    end
+
+    @unpack ∂1, ∂2, ∂3, ∂4 = appstate.flexpoints
+    for ∂ in (∂1, ∂2, ∂3, ∂4)
+        on(∂) do _state
+            drawgraph!(appstate)
         end
     end
 end

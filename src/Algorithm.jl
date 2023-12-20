@@ -20,7 +20,7 @@ function ∂(data::Points2D, boundingzeros::Integer)::Vector{Float64}
 
     derivatives = zeros(datalen)
 
-    for i in 1:(datalen - 2boundingzeros)
+    for i in 1:(datalen-2boundingzeros)
         offest = i + boundingzeros
         δx = x(data, offest + 1) - x(data, offest - 1)
         δy = y(data, offest + 1) - y(data, offest - 1)
@@ -29,12 +29,12 @@ function ∂(data::Points2D, boundingzeros::Integer)::Vector{Float64}
 
     if datalen >= boundingzeros + 1
         for i in 1:boundingzeros
-            derivatives[i] = derivatives[boundingzeros + 1]
+            derivatives[i] = derivatives[boundingzeros+1]
         end
     end
 
-    for i in (lastindex - boundingzeros):(datalen)
-        derivatives[i] = derivatives[lastindex - boundingzeros]
+    for i in (lastindex-boundingzeros):(datalen)
+        derivatives[i] = derivatives[lastindex-boundingzeros]
     end
 
     derivatives
@@ -51,11 +51,11 @@ function ∂(data::Points2D)::Vector{Float64}
 
     derivatives = zeros(datalen - 2)
 
-    for i in 2:(datalen - 1)
+    for i in 2:(datalen-1)
         offest = i
         Δx = x(data, offest + 1) - x(data, offest - 1)
         Δy = y(data, offest + 1) - y(data, offest - 1)
-        derivatives[offest - 1] = Δy / Δx
+        derivatives[offest-1] = Δy / Δx
     end
 
     derivatives
@@ -65,8 +65,8 @@ function ∂negative(derivatives::Vector{Float64})::Vector{Int}
     lastindex = derivativeslen = length(derivatives)
     mx = zeros(derivativeslen)
 
-    for i in 1:(lastindex - 1)
-        mx[i + 1] = derivatives[i] * derivatives[i + 1]
+    for i in 1:(lastindex-1)
+        mx[i+1] = derivatives[i] * derivatives[i+1]
     end
 
     o3 = map(ix -> ix[1], filter(ix -> ix[2] <= 0.0, collect(enumerate(mx))))

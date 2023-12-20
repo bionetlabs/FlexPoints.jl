@@ -27,6 +27,13 @@ mutable struct TopBarState
     rightpanel::Observable{Union{RightPanelState,Nothing}}
 end
 
+@with_kw mutable struct FlexPointsSettings
+    ∂1::Observable{Bool} = true
+    ∂2::Observable{Bool} = true
+    ∂3::Observable{Bool} = true
+    ∂4::Observable{Bool} = true
+end
+
 @with_kw mutable struct AppState
     figure::Figure
     topbar::TopBarState
@@ -43,6 +50,7 @@ end
     dataframe::Observable{DataFrame} = Observable(DataFrame())
     series::OrderedDict{Symbol,Observable{Bool}} = OrderedDict()
     data::Observable{Vector{Float64}} = []
+    flexpoints::FlexPointsSettings = FlexPointsSettings()
 end
 
 function applystyle!(appstate::AppState)

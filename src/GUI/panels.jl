@@ -49,7 +49,7 @@ function drawsources!(appstate::AppState)
     @unpack leftpanel, datasources = appstate
     index = Ref(0)
     style = currentstyle(appstate)
-    header(leftpanel[nextint(index), 1], "⛁ sources", style)
+    header(leftpanel[nextint(index), 1], "⛁ data sources", style)
     list(
         leftpanel,
         index,
@@ -63,20 +63,30 @@ function drawsamples(appstate::AppState)
     @unpack leftpanel, series = appstate
     index = Ref(0)
     style = currentstyle(appstate)
-    header(leftpanel[nextint(index), :], "𝝣 samples", style)
-    list(
+    header(leftpanel[nextint(index), 1:2], "𝝣 data samples", style)
+    gridlist(
         leftpanel,
         index,
         series,
-        style
+        style;
+        rowitems=2
     )
     expander(leftpanel[nextint(index), :])
 end
 
 function drawalgorithms(appstate::AppState)
-    target = appstate.leftpanel
-    header(target[1, 1], "∂ algorithms", currentstyle(appstate))
-    expander(target[2, 1])
+    style = currentstyle(appstate)
+    @unpack leftpanel, flexpoints = appstate
+    @unpack ∂1, ∂2, ∂3, ∂4 = flexpoints
+    index = Ref(0)
+    header(leftpanel[nextint(index), 1:4], "∂ algorithm settings", currentstyle(appstate))
+
+    tag(leftpanel[nextint(index), 1], rich("∂", subscript("1")), ∂1, style)
+    tag(leftpanel[index[], 2], rich("∂", subscript("2")), ∂2, style)
+    tag(leftpanel[index[], 3], rich("∂", subscript("3")), ∂3, style)
+    tag(leftpanel[index[], 4], rich("∂", subscript("4")), ∂4, style)
+
+    expander(leftpanel[nextint(index), 1])
 end
 
 function drawresults(appstate::AppState)

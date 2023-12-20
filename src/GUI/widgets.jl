@@ -374,3 +374,11 @@ function gridlist(
         colindex += 1
     end
 end
+
+function toggle(target, rowindex::Ref{<:Integer}, label::String, state::Observable{Bool})
+    toggle = Toggle(target[nextint(rowindex), 1], active=state, cornersegments=35)
+    Label(target[rowindex[], 2], label)
+    on(toggle.clicks) do _c
+        println(state)
+    end
+end
