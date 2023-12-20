@@ -65,7 +65,7 @@ function tagenum(
         labelcolor=labelcolor,
         labelcolor_active=labelcolor,
         labelcolor_hover=labelcolor,
-        cornerradius=5,
+        cornerradius=CORNER_RADIUS,
     )
 
     on(button.clicks) do _c
@@ -112,7 +112,7 @@ function tagdict(
         labelcolor=labelcolor,
         labelcolor_active=labelcolor,
         labelcolor_hover=labelcolor,
-        cornerradius=5,
+        cornerradius=CORNER_RADIUS,
     )
 
     on(button.clicks) do _c
@@ -162,7 +162,7 @@ function tagexclusive(
         labelcolor=labelcolor,
         labelcolor_active=labelcolor,
         labelcolor_hover=labelcolor,
-        cornerradius=5,
+        cornerradius=CORNER_RADIUS,
     )
 
     on(button.clicks) do _c
@@ -211,7 +211,7 @@ function tag(
         labelcolor=labelcolor,
         labelcolor_active=labelcolor,
         labelcolor_hover=labelcolor,
-        cornerradius=5,
+        cornerradius=CORNER_RADIUS,
     )
 
     on(button.clicks) do _c
@@ -253,7 +253,7 @@ function tagpositive(
         labelcolor=labelcolor,
         labelcolor_active=labelcolor,
         labelcolor_hover=labelcolor,
-        cornerradius=5,
+        cornerradius=CORNER_RADIUS,
     )
 
     on(button.clicks) do _c
@@ -295,7 +295,7 @@ function tagnegative(
         labelcolor=labelcolor,
         labelcolor_active=labelcolor,
         labelcolor_hover=labelcolor,
-        cornerradius=5,
+        cornerradius=CORNER_RADIUS,
     )
 
     on(button.clicks) do _c
@@ -375,10 +375,44 @@ function gridlist(
     end
 end
 
-function toggle(target, rowindex::Ref{<:Integer}, label::String, state::Observable{Bool})
+function toggle(target, label::String, state::Observable{Bool})
     toggle = Toggle(target[nextint(rowindex), 1], active=state, cornersegments=35)
     Label(target[rowindex[], 2], label)
     on(toggle.clicks) do _c
         println(state)
     end
+end
+
+function sliderunsigned(
+    target,
+    rowindex::Integer,
+    label,
+    targetvalue::Observable{T},
+    databounds::Observable{Tuple{T,T}},
+    style::CurrentStyle;
+    defaultrate::Float64=0.0,
+    scalefactor::Number=1
+) where {T<:Number}
+    text(target[rowindex, 1], label, style)
+    range = @lift begin
+        bounds = $(databounds)
+        LinRange(0, (bounds[2] - bounds[1]) / scalefactor, 1000)
+    end
+    startvalue = lift(range) do range
+        range.start + (range.stop - range.start) * defaultrate
+    end
+    slider = Slider(target[rowindex, 2:4], range=range, startvalue=startvalue)
+    on(range) do range
+        slider.selected_index[] = range.len * defaultrate
+    end
+    slidervalue = @lift begin
+        range = $(slider.range)
+        start = range.start
+        stop = range.stop
+        step = (stop - start) / range.len
+        value = start + step * $(slider.selected_index)
+        targetvalue[] = value
+        @sprintf "%.3f" value
+    end
+    text(target[rowindex, 5], slidervalue, style)
 end

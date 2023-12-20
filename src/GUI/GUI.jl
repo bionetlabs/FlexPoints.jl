@@ -54,9 +54,16 @@ function panelcontrol(appstate::AppState, button::Button, panelindex::PanelIndex
             $rightpanel => topbar.rightpanel[]
         end
         if isnothing(panel)
-            colsize!(appstate.figure.layout, Int(panelindex), Relative(0.0))
+            colsize!(appstate.figure.layout, Int(panelindex), Fixed(0.0))
         else
-            colsize!(appstate.figure.layout, Int(panelindex), Relative(0.1))
+            @match panelindex begin
+                $leftpanel => colsize!(
+                    appstate.figure.layout, Int(panelindex), Fixed(LEFT_PANEL_WIDTH)
+                )
+                $rightpanel => colsize!(
+                    appstate.figure.layout, Int(panelindex), Fixed(RIGHT_PANEL_WIDTH)
+                )
+            end
         end
     end
 end
@@ -100,7 +107,7 @@ function drawgraph!(appstate::AppState)::Axis
 
     data = collect(zip(xs, ys))
     @unpack ∂1, ∂2, ∂3, ∂4 = appstate.flexpoints
-    indices = flexpoints(data, (∂1[], ∂2[], ∂3[], ∂4[]))
+    indices = flexpoints(data, DerivativesSelector(∂1[], ∂2[], ∂3[], ∂4[]))
     points = [data[i...] for i in indices]
 
     scatterlines!(
@@ -150,9 +157,9 @@ function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resol
     rightpanel = figure[2, 3] = GridLayout()
     bottombar = figure[3, 1:3] = GridLayout()
 
-    colsize!(figure.layout, 1, Relative(0.1))
-    colsize!(figure.layout, 2, Auto(1.0))
-    colsize!(figure.layout, 3, Relative(0.1))
+    colsize!(figure.layout, 1, Fixed(LEFT_PANEL_WIDTH))
+    colsize!(figure.layout, 2, Auto(false))
+    colsize!(figure.layout, 3, Fixed(RIGHT_PANEL_WIDTH))
 
     rowsize!(figure.layout, 1, Fixed(TOP_BAR_HEIGHT))
     rowsize!(figure.layout, 2, Auto(false))

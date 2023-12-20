@@ -5,6 +5,9 @@ using OrderedCollections
 
 include("styles.jl")
 
+const DEFAULT_MFILTER_RATE::Float64 = 0.1
+const DEFAULT_MFILTER_SCALE_FACTOR = 3
+
 @enum PanelIndex begin
     leftpanel = 1
     rightpanel = 3
@@ -27,11 +30,18 @@ mutable struct TopBarState
     rightpanel::Observable{Union{RightPanelState,Nothing}}
 end
 
-@with_kw mutable struct FlexPointsSettings
+@with_kw struct FlexPointsMFilter
+    m1::Observable{Float64} = 0.01
+    m2::Observable{Float64} = 0.01
+    m3::Observable{Float64} = 0.01
+end
+
+@with_kw struct FlexPointsSettings
     ∂1::Observable{Bool} = true
-    ∂2::Observable{Bool} = true
+    ∂2::Observable{Bool} = false
     ∂3::Observable{Bool} = true
-    ∂4::Observable{Bool} = true
+    ∂4::Observable{Bool} = false
+    mfilter::FlexPointsMFilter = FlexPointsMFilter()
 end
 
 @with_kw mutable struct AppState
@@ -50,6 +60,7 @@ end
     dataframe::Observable{DataFrame} = Observable(DataFrame())
     series::OrderedDict{Symbol,Observable{Bool}} = OrderedDict()
     data::Observable{Vector{Float64}} = []
+    databounds::Observable{Tuple{Float64,Float64}} = (0, 0)
     flexpoints::FlexPointsSettings = FlexPointsSettings()
 end
 
@@ -94,6 +105,9 @@ function dataframe!(appstate::AppState)
                 map(enumerate(names(df))) do (i, name)
                     state = if i == 1
                         appstate.data[] = df[!, name]
+                        appstate.databounds[] = (
+                            minimum(appstate.data[]), maximum(appstate.data[])
+                        )
                         Symbol(name) => Observable(true)
                     else
                         Symbol(name) => Observable(false)
@@ -101,6 +115,9 @@ function dataframe!(appstate::AppState)
                     on(last(state)) do state
                         if state
                             appstate.data[] = df[!, name]
+                            appstate.databounds[] = (
+                                minimum(appstate.data[]), maximum(appstate.data[])
+                            )
                         end
                     end
                     state

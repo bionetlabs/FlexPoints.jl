@@ -1,6 +1,7 @@
 using Match
 using GLMakie
 using Parameters
+using Printf
 
 include("widgets.jl")
 
@@ -76,17 +77,32 @@ end
 
 function drawalgorithms(appstate::AppState)
     style = currentstyle(appstate)
-    @unpack leftpanel, flexpoints = appstate
-    @unpack ∂1, ∂2, ∂3, ∂4 = flexpoints
+    @unpack leftpanel, flexpoints, databounds = appstate
+    @unpack ∂1, ∂2, ∂3, ∂4, mfilter = flexpoints
+    @unpack m1, m2, m3 = mfilter
     index = Ref(0)
-    header(leftpanel[nextint(index), 1:4], "∂ algorithm settings", currentstyle(appstate))
+    header(leftpanel[nextint(index), 1:5], "∂ algorithm settings", currentstyle(appstate))
 
-    tag(leftpanel[nextint(index), 1], rich("∂", subscript("1")), ∂1, style)
-    tag(leftpanel[index[], 2], rich("∂", subscript("2")), ∂2, style)
-    tag(leftpanel[index[], 3], rich("∂", subscript("3")), ∂3, style)
-    tag(leftpanel[index[], 4], rich("∂", subscript("4")), ∂4, style)
+    text(leftpanel[nextint(index), 1], "derivatie:", style)
+    tag(leftpanel[index[], 2], rich("∂", subscript("1")), ∂1, style)
+    tag(leftpanel[index[], 3], rich("∂", subscript("2")), ∂2, style)
+    tag(leftpanel[index[], 4], rich("∂", subscript("3")), ∂3, style)
+    tag(leftpanel[index[], 5], rich("∂", subscript("4")), ∂4, style)
 
-    expander(leftpanel[nextint(index), 1])
+    for (i, m) in enumerate((m1, m2, m3))
+        sliderunsigned(
+            leftpanel,
+            nextint(index)[],
+            rich("∂", subscript(string(i)), " mfilter:"),
+            m,
+            databounds,
+            style;
+            defaultrate=DEFAULT_MFILTER_RATE,
+            scalefactor=DEFAULT_MFILTER_SCALE_FACTOR
+        )
+    end
+
+    expander(leftpanel[nextint(index), 1:5])
 end
 
 function drawresults(appstate::AppState)
