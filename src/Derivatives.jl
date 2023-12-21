@@ -7,10 +7,10 @@ using Parameters
 using FlexPoints
 
 @with_kw mutable struct DerivativesData
-    ∂1::Union{Vector{Float64},Nothing} = nothing
-    ∂2::Union{Vector{Float64},Nothing} = nothing
-    ∂3::Union{Vector{Float64},Nothing} = nothing
-    ∂4::Union{Vector{Float64},Nothing} = nothing
+    ∂1data::Union{Vector{Float64},Nothing} = nothing
+    ∂2data::Union{Vector{Float64},Nothing} = nothing
+    ∂3data::Union{Vector{Float64},Nothing} = nothing
+    ∂4data::Union{Vector{Float64},Nothing} = nothing
 end
 
 @with_kw mutable struct DerivativesSelector
@@ -89,6 +89,9 @@ function ∂(data::Points2D)::Vector{Float64}
     derivatives
 end
 
+"""
+Returns indices of x-intercepts
+"""
 function ∂zeros(derivatives::Vector{Float64})::Vector{Int}
     lastindex = derivativeslen = length(derivatives)
     mx = zeros(derivativeslen - 1)
@@ -97,25 +100,25 @@ function ∂zeros(derivatives::Vector{Float64})::Vector{Int}
         mx[i] = derivatives[i] * derivatives[i+1]
     end
 
-    o3 = map(ix -> ix[1], filter(ix -> ix[2] <= 0.0, collect(enumerate(mx))))
+    output = map(ix -> ix[1], filter(ix -> ix[2] <= 0.0, collect(enumerate(mx))))
 
-    o3tail = if !isempty(o3)
-        if first(o3) != 1
+    outputtail = if !isempty(output)
+        if first(output) != 1
             newarray = [1]
-            append!(newarray, o3)
+            append!(newarray, output)
             newarray
         else
-            o3
+            output
         end
     else
         [1]
     end
 
-    if last(o3tail) != lastindex
-        push!(o3tail, lastindex)
+    if last(outputtail) != lastindex
+        push!(outputtail, lastindex)
     end
 
-    o3tail
+    outputtail
 end
 
 end

@@ -396,7 +396,7 @@ function sliderunsigned(
     text(target[rowindex, 1], label, style)
     range = @lift begin
         bounds = $(databounds)
-        LinRange(0, (bounds[2] - bounds[1]) / scalefactor, 1000)
+        LinRange(0, (bounds[2] - bounds[1]) / scalefactor, 20)
     end
     startvalue = lift(range) do range
         range.start + (range.stop - range.start) * defaultrate
@@ -412,7 +412,7 @@ function sliderunsigned(
         step = (stop - start) / range.len
         value = start + step * $(slider.selected_index)
         targetvalue[] = value
-        @sprintf "%.3f" value
+        @sprintf "%.5f" value
     end
     text(target[rowindex, 5], slidervalue, style)
 end

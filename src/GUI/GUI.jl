@@ -106,20 +106,26 @@ function drawgraph!(appstate::AppState)::Axis
 
 
     data = collect(zip(xs, ys))
-    @unpack ∂1, ∂2, ∂3, ∂4 = appstate.flexpoints
-    indices = flexpoints(data, DerivativesSelector(∂1[], ∂2[], ∂3[], ∂4[]))
-    points = [data[i...] for i in indices]
-
-    scatterlines!(
-        axis,
-        points,
-        color=style.flexpointcolor,
-        linestyle=:dot,
-        markersize=12,
-        marker=:rect,
-        strokewidth=0.5,
-        strokecolor=style.disabledbuttoncolor,
+    @unpack ∂1, ∂2, ∂3, ∂4, mfilter = appstate.flexpoints
+    @unpack m1, m2, m3 = mfilter
+    indices = flexpoints(
+        data,
+        DerivativesSelector(∂1[], ∂2[], ∂3[], ∂4[]),
+        MFilterParameters(m1[], m2[], m3[])
     )
+    if length(indices) > 1
+        points = [data[i...] for i in indices]
+        scatterlines!(
+            axis,
+            points,
+            color=style.flexpointcolor,
+            linestyle=:dot,
+            markersize=12,
+            marker=:rect,
+            strokewidth=0.5,
+            strokecolor=style.disabledbuttoncolor,
+        )
+    end
     axis.targetlimits[] = targetlimits
 
     axis
@@ -202,9 +208,15 @@ function updategraph!(appstate::AppState)
         end
     end
 
-    @unpack ∂1, ∂2, ∂3, ∂4 = appstate.flexpoints
+    @unpack ∂1, ∂2, ∂3, ∂4, mfilter = appstate.flexpoints
+    @unpack m1, m2, m3 = mfilter
     for ∂ in (∂1, ∂2, ∂3, ∂4)
         on(∂) do _state
+            drawgraph!(appstate)
+        end
+    end
+    for m in (m1, m2, m3)
+        on(m) do _state
             drawgraph!(appstate)
         end
     end

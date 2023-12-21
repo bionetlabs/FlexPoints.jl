@@ -2,8 +2,6 @@ module Algorithm
 
 export flexpoints
 
-using DataStructures
-
 using FlexPoints
 
 # Variable derivatives indicates which derivatives should be use
@@ -11,7 +9,8 @@ using FlexPoints
 # then the first and the third derivative will be used.
 function flexpoints(
     data::Points2D,
-    dselector::DerivativesSelector=DerivativesSelector()
+    dselector::DerivativesSelector,
+    mfilter_params::MFilterParameters
 )::Vector{Int}
     @assert !isempty(data)
     requiredlen = length(data) ÷ 2 - 1
@@ -21,27 +20,15 @@ function flexpoints(
 
     datax = map(point -> x(point), data)
 
-    ∂1data = maxderivative >= 1 && ∂(data, 1)
-    ∂2data = maxderivative >= 2 && ∂(collect(zip(datax, ∂1data)), 2)
-    ∂3data = maxderivative >= 3 && ∂(collect(zip(datax, ∂2data)), 3)
-    ∂4data = maxderivative >= 4 && ∂(collect(zip(datax, ∂3data)), 4)
+    ∂1data = maxderivative >= 1 ? ∂(data, 1) : nothing
+    ∂2data = maxderivative >= 1 ? ∂(collect(zip(datax, ∂1data)), 2) : nothing
+    ∂3data = maxderivative >= 2 ? ∂(collect(zip(datax, ∂2data)), 3) : nothing
+    ∂4data = maxderivative >= 3 ? ∂(collect(zip(datax, ∂3data)), 4) : nothing
     derivatives = DerivativesData(∂1data, ∂2data, ∂3data, ∂4data)
 
-    output = SortedSet{Int}()
-    if dselector.∂1
-        union!(output, ∂zeros(∂1data))
-    end
-    if dselector.∂2
-        union!(output, ∂zeros(∂2data))
-    end
-    if dselector.∂3
-        union!(output, ∂zeros(∂3data))
-    end
-    if dselector.∂4
-        union!(output, ∂zeros(∂4data))
-    end
+    validzeros = mfilter(derivatives, dselector, mfilter_params)
 
-    collect(output)
+    validzeros
 end
 
 end

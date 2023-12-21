@@ -6,7 +6,7 @@ using OrderedCollections
 include("styles.jl")
 
 const DEFAULT_MFILTER_RATE::Float64 = 0.1
-const DEFAULT_MFILTER_SCALE_FACTOR = 3
+const DEFAULT_MFILTER_SCALE_FACTOR = 500
 
 @enum PanelIndex begin
     leftpanel = 1
@@ -31,9 +31,9 @@ mutable struct TopBarState
 end
 
 @with_kw struct FlexPointsMFilter
-    m1::Observable{Float64} = 0.01
-    m2::Observable{Float64} = 0.01
-    m3::Observable{Float64} = 0.01
+    m1::Observable{Float64} = 0.0
+    m2::Observable{Float64} = 0.0
+    m3::Observable{Float64} = 0.0
 end
 
 @with_kw struct FlexPointsSettings
