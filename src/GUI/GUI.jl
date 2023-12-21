@@ -113,6 +113,11 @@ function drawgraph!(appstate::AppState)::Axis
         DerivativesSelector(∂1[], ∂2[], ∂3[], ∂4[]),
         MFilterParameters(m1[], m2[], m3[])
     )
+    appstate.points[] = indices
+    points2d = map(i -> (i, ys[i]), indices)
+    appstate.reconstruction[] = map(xs) do x
+        linapprox(points2d, x)
+    end
     if length(indices) > 1
         points = [data[i...] for i in indices]
         scatterlines!(

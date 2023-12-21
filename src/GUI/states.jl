@@ -62,6 +62,8 @@ end
     data::Observable{Vector{Float64}} = []
     databounds::Observable{Tuple{Float64,Float64}} = (0, 0)
     flexpoints::FlexPointsSettings = FlexPointsSettings()
+    points::Observable{Vector{Int}} = []
+    reconstruction::Observable{Vector{Float64}} = []
 end
 
 function applystyle!(appstate::AppState)
