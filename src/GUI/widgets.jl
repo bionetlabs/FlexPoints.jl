@@ -394,7 +394,7 @@ function gridlist(
     rowitems=2
 )
     colindex = 1
-    @time for (i, key) in enumerate(keys(collection))
+    for (i, key) in enumerate(keys(collection))
         if i % rowitems == 1
             nextint(rowindex)
             colindex = 1
@@ -412,7 +412,7 @@ function toggle(target, label::String, state::Observable{Bool})
     end
 end
 
-function sliderunsigned(
+function slider(
     target,
     rowindex::Integer,
     label,
@@ -427,21 +427,47 @@ function sliderunsigned(
         bounds = $(databounds)
         LinRange(0, (bounds[2] - bounds[1]) / scalefactor, 100)
     end
-    startvalue = lift(range) do range
-        range.start + (range.stop - range.start) * defaultrate
-    end
-    slider = Slider(target[rowindex, 2:4], range=range, startvalue=startvalue)
-    on(range) do range
-        slider.selected_index[] = range.len * defaultrate
-    end
+    # startvalue = lift(range) do range
+    #     range.start + (range.stop - range.start) * defaultrate
+    # end
+    slider = Slider(target[rowindex, 2:4], range=range, startvalue=targetvalue)
+    # on(range) do range
+    #     slider.selected_index[] = range.len * defaultrate
+    # end
     slidervalue = @lift begin
         range = $(slider.range)
         start = range.start
         stop = range.stop
         step = (stop - start) / range.len
         value = start + step * $(slider.selected_index)
-        targetvalue[] = value
+        targetvalue[] = T(value)
         @sprintf "%.5f" value
+    end
+    text(target[rowindex, 5], slidervalue, style)
+end
+
+function sliderunsigned(
+    target,
+    rowindex::Integer,
+    label,
+    targetvalue::Observable{T},
+    databounds::Observable{Tuple{T,T}},
+    style::CurrentStyle
+) where {T<:Number}
+    text(target[rowindex, 1], label, style)
+    range = @lift begin
+        bounds = $(databounds)
+        LinRange(bounds[1], bounds[2], 100)
+    end
+    slider = Slider(target[rowindex, 2:4], range=range, startvalue=targetvalue[])
+    slidervalue = @lift begin
+        range = $(slider.range)
+        start = range.start
+        stop = range.stop
+        step = (stop - start) / range.len
+        value = start + step * $(slider.selected_index)
+        targetvalue[] = T(round(T, value))
+        string(Int(targetvalue[]))
     end
     text(target[rowindex, 5], slidervalue, style)
 end

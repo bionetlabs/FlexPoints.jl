@@ -105,15 +105,26 @@ function drawgraph!(appstate::AppState)::Axis
 
     lines!(axis, xs, ys, color=style.signalcolor)
 
-
     data = collect(zip(xs, ys))
-    @unpack ∂1, ∂2, ∂3, ∂4, mfilter = appstate.flexpoints
+    @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter = appstate.flexpoints
     @unpack m1, m2, m3 = mfilter
-    indices = flexpoints(
+    datafiltered, indices = flexpoints(
         data,
         DerivativesSelector(∂1[], ∂2[], ∂3[], ∂4[]),
-        MFilterParameters(m1[], m2[], m3[])
+        FlexPointsParameters(
+            NoiseFilterParameters(
+                noisefilter.data[],
+                noisefilter.derivatives[],
+                noisefilter.filtersize[]
+            ),
+            MFilterParameters(m1[], m2[], m3[])
+        )
     )
+
+    if noisefilter.data[]
+        lines!(axis, xs, datafiltered, color=style.filteredsignalcolor)
+    end
+
     appstate.points[] = indices
     points2d = map(i -> (Float64(i), ys[i]), indices)
     appstate.reconstruction[] = map(1:datalen) do x
@@ -128,8 +139,8 @@ function drawgraph!(appstate::AppState)::Axis
             points,
             color=style.flexpointcolor,
             linestyle=:dot,
-            markersize=12,
-            marker=:rect,
+            markersize=8,
+            marker=:circle,
             strokewidth=0.5,
             strokecolor=style.disabledbuttoncolor,
         )

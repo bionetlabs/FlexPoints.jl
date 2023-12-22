@@ -1,11 +1,102 @@
 module Filters
 
-export MFilterParameters, mfilter
+export MFilterParameters, mfilter, NoiseFilterParameters, noisefilter
 
 using Parameters
 using DataStructures
+using Statistics
+using LinearAlgebra
 
 using FlexPoints
+
+@with_kw mutable struct NoiseFilterParameters
+    data::Bool = true
+    derivatives::Bool = true
+    filtersize::Unsigned = 5
+end
+
+function signal2noise(x::Vector, y::Vector, errflimit::Float64)
+    samples = length(y)
+    senergy = y' * y # find energy of the error signal after linear fit
+    xmean = mean(x)
+    M = [(x .- xmean) .* (x .- xmean) (x .- xmean) ones(samples)]
+    A = pinv(M) * y
+    ferr = y - M * A # find error after quadratic fit
+    fenergy = ferr' * ferr # find energy of the error signal after quadratic fit
+    errf = (fenergy / senergy)^(1 / 2) # find error reduction ratio figure
+    # errf = (fenergy / senergy)^(2^(-(7 - samples) / 2))
+
+    # use different constant depending on the window reduction policy
+    # use 0.7 for 80% certainty, 0.5 for 95% certainy and 0.4 for 1% certainty
+    if errf < errflimit
+        reducewindow = true
+        errvalue = ferr[Int(ceil(samples / 2))]
+        reducewindow, errvalue
+    else
+        reducewindow = false
+        errvalue = 0
+        reducewindow, errvalue
+    end
+end
+
+function checknoise(
+    data::Vector{Float64},
+    index::Unsigned,
+    filtersize::Unsigned,
+    errflimit::Float64
+)
+    winners = data[(index-filtersize):(index+filtersize)]
+    x = collect((index-filtersize):(index+filtersize))
+    m, c = linregression(x, winners)
+    smean = m * index + c
+    error = winners .- (m .* x .+ c)
+
+    # set errf certainty limit %0.7 20%, 0.5 5%, 0.35 1%
+    reducewindow, errvalue = signal2noise(x, error, errflimit)
+    if reducewindow
+        if filtersize > 2
+            filtersize = filtersize - 1
+            filtersize, smean = checknoise(data, index, filtersize, errflimit)
+        else
+            smean = data[index]
+        end
+    else
+        smean = smean - errvalue
+    end
+
+    filtersize, smean
+end
+
+function noisefilter(
+    data::Vector{Float64},
+    filtersize::Unsigned
+)::Vector{Float64}
+    smean = zeros(length(data))
+    errflimit = 0
+    for kk = 1:3
+        currentsize = filtersize
+        for index in (filtersize+1):(length(data)-filtersize)
+            if currentsize < filtersize
+                currentsize += 1
+            end
+            if kk == 1
+                errflimit = 0.3
+            elseif kk == 2
+                errflimit = 0.6
+            elseif kk == 3
+                errflimit = 0.7
+            elseif kk == 4
+                errflimit = 0.7
+            end
+            currentsize, smeanlocal = checknoise(data, index, currentsize, errflimit)
+            smean[index] = smeanlocal
+            # return smean # TODO: remove
+        end
+        smean[1:filtersize] .= smean[filtersize+1]
+        smean[length(data)-filtersize:length(data)] .= smean[length(data)-filtersize-1]
+    end
+    smean
+end
 
 mutable struct MFilterParameters
     m1::Float64

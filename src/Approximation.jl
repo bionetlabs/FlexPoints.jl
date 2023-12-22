@@ -1,6 +1,6 @@
 module Approximation
 
-export linapprox
+export linapprox, linregression
 
 using FlexPoints.Types
 
@@ -21,6 +21,21 @@ function linapprox(data::Points2D, targetx::Real)
             return slope * targetx + intercept
         end
     end
+end
+
+"""
+Takes 2D data represented by x and y vectors 
+and returns gradient m and y-intercept c
+"""
+function linregression(x, y)::Tuple{Number,Number}
+    n = length(y)
+    sx = sum(x)
+    sy = sum(y)
+    sx2 = x' * x
+    sxy = x' * y
+    m = (n * sxy - sx * sy) / (n * sx2 - sx^2)
+    c = (sy * sx2 - sx * sxy) / (n * sx2 - sx^2)
+    m, c
 end
 
 end

@@ -5,6 +5,9 @@ using Reexport
 include("Types.jl")
 @reexport using FlexPoints.Types
 
+include("Approximation.jl")
+@reexport using FlexPoints.Approximation
+
 include("Derivatives.jl")
 @reexport using FlexPoints.Derivatives
 
@@ -13,9 +16,6 @@ include("Filters.jl")
 
 include("Algorithm.jl")
 @reexport using FlexPoints.Algorithm
-
-include("Approximation.jl")
-@reexport using FlexPoints.Approximation
 
 include("Measures.jl")
 @reexport using FlexPoints.Measures
