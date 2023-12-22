@@ -37,11 +37,22 @@ end
 end
 
 @with_kw struct FlexPointsSettings
-    ∂1::Observable{Bool} = true
+    ∂1::Observable{Bool} = false
     ∂2::Observable{Bool} = false
     ∂3::Observable{Bool} = true
     ∂4::Observable{Bool} = false
     mfilter::FlexPointsMFilter = FlexPointsMFilter()
+end
+
+@with_kw struct FlexPointsPerformance
+    cf::Observable{Float64} = NaN
+    rmse::Observable{Float64} = NaN
+    nrmse::Observable{Float64} = NaN
+    minrmse::Observable{Float64} = NaN
+    prd::Observable{Float64} = NaN
+    nprd::Observable{Float64} = NaN
+    qs::Observable{Float64} = NaN
+    nqs::Observable{Float64} = NaN
 end
 
 @with_kw mutable struct AppState
@@ -63,7 +74,9 @@ end
     databounds::Observable{Tuple{Float64,Float64}} = (0, 0)
     flexpoints::FlexPointsSettings = FlexPointsSettings()
     points::Observable{Vector{Int}} = []
-    reconstruction::Observable{Vector{Float64}} = []
+    reconstruction::Observable{Vector{Float64}} = Vector{Float64}()
+    performance::FlexPointsPerformance = FlexPointsPerformance()
+    applychanges::Observable{Bool} = false
 end
 
 function applystyle!(appstate::AppState)
@@ -141,4 +154,20 @@ function datasources!(appstate::AppState, files::Vector{String})
         end
     end
     appstate.datasources = sources
+end
+
+
+function performance(appstate::AppState)
+    performance = appstate.performance
+    reconstruction = appstate.reconstruction[]
+    data = appstate.data[]
+
+    performance.cf[] = cf(data, appstate.points[])
+    performance.rmse[] = rmse(data, reconstruction)
+    performance.nrmse[] = nrmse(data, reconstruction)
+    performance.minrmse[] = minrmse(data, reconstruction)
+    performance.prd[] = prd(data, reconstruction)
+    performance.nprd[] = nprd(data, reconstruction)
+    performance.qs[] = qs(performance.cf[], performance.prd[])
+    performance.nqs[] = nqs(performance.cf[], performance.nprd[])
 end

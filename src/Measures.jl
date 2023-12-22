@@ -14,23 +14,18 @@ function cf(inputsize::Integer, outputsize::Integer)::Float64
 end
 
 "Compression Factor (CF)"
-function cf(data::Points2D, samples::Points2D)
+function cf(data::Vector{<:Number}, samples::Vector{<:Number})
     cf(length(data), length(samples))
 end
 
 "Root Mean Square Error (RMSE)"
-function rmse(data::Points2D, samples::Points2D)::Float64
+function rmse(data::Vector{Float64}, samples::Vector{Float64})::Float64
     @assert !isempty(data)
     @assert !isempty(samples)
 
-    yapprox = []
-    for (xi, _yi) in data
-        push!(yapprox, linapprox(samples, xi))
-    end
-    
     errorsum = 0.0
-    for (i, yi_approx) in enumerate(yapprox)
-        yi = y(data, i)
+    for (i, yi_approx) in enumerate(samples)
+        yi = data[i]
         errorsum += (yi - yi_approx)^2
     end
 
@@ -38,19 +33,14 @@ function rmse(data::Points2D, samples::Points2D)::Float64
 end
 
 "Normalized Root Mean Square Error (NRMSE)"
-function nrmse(data::Points2D, samples::Points2D)::Float64
+function nrmse(data::Vector{Float64}, samples::Vector{Float64})::Float64
     @assert !isempty(data)
     @assert !isempty(samples)
 
-    yapprox = []
-    for (xi, _yi) in data
-        push!(yapprox, linapprox(samples, xi))
-    end
-    
     numerator = 0.0
     denominator = 0.0
-    for (i, yi_approx) in enumerate(yapprox)
-        yi = y(data, i)
+    for (i, yi_approx) in enumerate(samples)
+        yi = data[i]
         numerator += (yi - yi_approx)^2
         denominator += yi^2
     end
@@ -59,22 +49,16 @@ function nrmse(data::Points2D, samples::Points2D)::Float64
 end
 
 "Mean Independent Normalized Root Mean Square Error (MINRMSE)"
-function minrmse(data::Points2D, samples::Points2D)::Float64
+function minrmse(data::Vector{Float64}, samples::Vector{Float64})::Float64
     @assert !isempty(data)
     @assert !isempty(samples)
 
-    yapprox = []
-    y = []
-    for (xi, yi) in data
-        push!(yapprox, linapprox(samples, xi))
-        push!(y, yi)
-    end
-    ymean = mean(y)
-    
+    ymean = mean(data)
+
     numerator = 0.0
     denominator = 0.0
-    for (i, yi_approx) in enumerate(yapprox)
-        yi = y[i]
+    for (i, yi_approx) in enumerate(samples)
+        yi = data[i]
         numerator += (yi - yi_approx)^2
         denominator += (yi - ymean)^2
     end
@@ -83,23 +67,34 @@ function minrmse(data::Points2D, samples::Points2D)::Float64
 end
 
 "Percentage Root mean square Difference (PRD)"
-function prd(data::Points2D, samples::Points2D)::Float64
+function prd(data::Vector{Float64}, samples::Vector{Float64})::Float64
     nrmse(data, samples) * 100.0
 end
 
 "Normalized Percentage Root mean square Difference (NPRD)"
-function nprd(data::Points2D, samples::Points2D)::Float64
+function nprd(data::Vector{Float64}, samples::Vector{Float64})::Float64
     minrmse(data, samples) * 100.0
 end
 
 "Quality Score (QS)"
-function qs(data::Points2D, samples::Points2D)::Float64
+function qs(data::Vector{Float64}, samples::Vector{Float64})::Float64
     cf(data, samples) / prd(data, samples)
 end
 
+"Quality Score (QS)"
+function qs(cf::Float64, prd::Float64)::Float64
+    cf / prd
+end
+
 "Normalized Quality Score (NQS)"
-function nqs(data::Points2D, samples::Points2D)::Float64
+function nqs(data::Vector{Float64}, samples::Vector{Float64})::Float64
     cf(data, samples) / nprd(data, samples)
 end
+
+"Normalized Quality Score (NQS)"
+function nqs(cf::Float64, nprd::Float64)::Float64
+    cf / nprd
+end
+
 
 end

@@ -99,7 +99,8 @@ function drawgraph!(appstate::AppState)::Axis
     empty!(axis)
 
     data = appstate.data[]
-    xs = LinRange(0, (length(data) - 1) / SAMPES_PER_MILLISECOND, length(data))
+    datalen = length(data)
+    xs = LinRange(0, (length(data) - 1) / SAMPES_PER_MILLISECOND, datalen)
     ys = data
 
     lines!(axis, xs, ys, color=style.signalcolor)
@@ -114,10 +115,12 @@ function drawgraph!(appstate::AppState)::Axis
         MFilterParameters(m1[], m2[], m3[])
     )
     appstate.points[] = indices
-    points2d = map(i -> (i, ys[i]), indices)
-    appstate.reconstruction[] = map(xs) do x
-        linapprox(points2d, x)
+    points2d = map(i -> (Float64(i), ys[i]), indices)
+    appstate.reconstruction[] = map(1:datalen) do x
+        Float64(linapprox(points2d, x))
     end
+    # Threads.@spawn performance(appstate)
+    performance(appstate)
     if length(indices) > 1
         points = [data[i...] for i in indices]
         scatterlines!(
@@ -213,17 +216,8 @@ function updategraph!(appstate::AppState)
         end
     end
 
-    @unpack ∂1, ∂2, ∂3, ∂4, mfilter = appstate.flexpoints
-    @unpack m1, m2, m3 = mfilter
-    for ∂ in (∂1, ∂2, ∂3, ∂4)
-        on(∂) do _state
-            drawgraph!(appstate)
-        end
-    end
-    for m in (m1, m2, m3)
-        on(m) do _state
-            drawgraph!(appstate)
-        end
+    on(appstate.applychanges) do _
+        drawgraph!(appstate)
     end
 end
 

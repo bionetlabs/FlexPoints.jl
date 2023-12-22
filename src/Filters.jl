@@ -29,7 +29,7 @@ function mfilter(
     ∂3zeros = ∂zeros(∂3data)
     ∂4zeros = ∂zeros(∂4data)
 
-    validindices = SortedSet{Int}()
+    validindices = SortedSet{Int}([1, datalength])
 
     if ∂1
         for index in ∂1zeros

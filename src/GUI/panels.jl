@@ -77,7 +77,7 @@ end
 
 function drawalgorithms(appstate::AppState)
     style = currentstyle(appstate)
-    @unpack leftpanel, flexpoints, databounds = appstate
+    @unpack leftpanel, flexpoints, databounds, applychanges = appstate
     @unpack ∂1, ∂2, ∂3, ∂4, mfilter = flexpoints
     @unpack m1, m2, m3 = mfilter
     index = Ref(0)
@@ -102,13 +102,28 @@ function drawalgorithms(appstate::AppState)
         )
     end
 
+    button(leftpanel[nextint(index), 1:5], "apply", applychanges, style)
+
     expander(leftpanel[nextint(index), 1:5])
 end
 
 function drawresults(appstate::AppState)
     target = appstate.rightpanel
-    header(target[1, 1], "ஃ results", currentstyle(appstate))
-    expander(target[2, 1])
+    index = Ref(0)
+    style = currentstyle(appstate)
+    @unpack cf, rmse, nrmse, minrmse, prd, nprd, qs, nqs = appstate.performance
+
+    header(target[nextint(index), 1:2], "ஃ results", currentstyle(appstate))
+    keyvalue(target, nextint(index), "cf", cf, style)
+    keyvalue(target, nextint(index), "rmse", rmse, style)
+    keyvalue(target, nextint(index), "nrmse", nrmse, style)
+    keyvalue(target, nextint(index), "minrmse", minrmse, style)
+    keyvalue(target, nextint(index), "prd", prd, style)
+    keyvalue(target, nextint(index), "nprd", nprd, style)
+    keyvalue(target, nextint(index), "qs", qs, style)
+    keyvalue(target, nextint(index), "nqs", nqs, style)
+
+    expander(target[nextint(index), 1:2])
 end
 
 function drawsettings(appstate::AppState)

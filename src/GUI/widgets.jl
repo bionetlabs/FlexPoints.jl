@@ -222,6 +222,35 @@ function tag(
     button
 end
 
+function button(
+    target, label, state::Observable{Bool}, style::CurrentStyle;
+)::Button
+    button = Button(
+        target;
+        label=label,
+        tellheight=true,
+        padding=[12, 2, 2, 2],
+        strokewidth=1,
+        buttoncolor=style.disabledbuttoncolor,
+        buttoncolor_hover=style.disabledbuttoncolor_hover,
+        buttoncolor_active=style.disabledbuttoncolor_active,
+        strokecolor=:transparent,
+        font=:juliamono_light,
+        fontsize=FONT_SIZE,
+        labelcolor=style.disabledbuttonlabelcolor,
+        labelcolor_active=style.disabledbuttonlabelcolor,
+        labelcolor_hover=style.disabledbuttonlabelcolor,
+        cornerradius=CORNER_RADIUS,
+    )
+
+    on(button.clicks) do _c
+        state[] = !state[]
+        notify(state)
+    end
+
+    button
+end
+
 function tagpositive(
     target, label, state::Observable{Bool}, style::CurrentStyle;
 )::Button
@@ -396,7 +425,7 @@ function sliderunsigned(
     text(target[rowindex, 1], label, style)
     range = @lift begin
         bounds = $(databounds)
-        LinRange(0, (bounds[2] - bounds[1]) / scalefactor, 20)
+        LinRange(0, (bounds[2] - bounds[1]) / scalefactor, 100)
     end
     startvalue = lift(range) do range
         range.start + (range.stop - range.start) * defaultrate
@@ -415,4 +444,21 @@ function sliderunsigned(
         @sprintf "%.5f" value
     end
     text(target[rowindex, 5], slidervalue, style)
+end
+
+function keyvalue(
+    target,
+    rowindex::Integer,
+    label,
+    value::Observable{T},
+    style::CurrentStyle
+) where {T<:Number}
+    text(target[rowindex, 1], label, style; color=style.fadedlabelcolor)
+    valuetext = lift(value -> @sprintf("%.3f", value[]), value)
+    text(
+        target[rowindex, 2],
+        valuetext,
+        style;
+        color=style.disabledbuttonlabelcolor
+    )
 end

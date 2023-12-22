@@ -30,6 +30,7 @@ abstract type Style end
     disabledbuttoncolor_hover::RGBA = colorant"gray21"
     disabledbuttoncolor_active::RGBA = colorant"gray28"
     disabledbuttonlabelcolor::RGBA = colorant"gray93"
+    fadedlabelcolor::RGBA = colorant"gray80"
 end
 
 @with_kw struct LightStyle <: Style
@@ -46,6 +47,7 @@ end
     disabledbuttoncolor_hover::RGBA = colorant"gray86"
     disabledbuttoncolor_active::RGBA = colorant"gray79"
     disabledbuttonlabelcolor::RGBA = colorant"gray7"
+    fadedlabelcolor::RGBA = colorant"gray20"
 end
 
 struct CurrentStyle
@@ -62,6 +64,7 @@ struct CurrentStyle
     disabledbuttoncolor_hover::Observable{RGBA}
     disabledbuttoncolor_active::Observable{RGBA}
     disabledbuttonlabelcolor::Observable{RGBA}
+    fadedlabelcolor::Observable{RGBA}
 end
 
 function CurrentStyle(style::Style)::CurrentStyle
@@ -78,7 +81,8 @@ function CurrentStyle(style::Style)::CurrentStyle
         Observable(style.disabledbuttoncolor),
         Observable(style.disabledbuttoncolor_hover),
         Observable(style.disabledbuttoncolor_active),
-        Observable(style.disabledbuttonlabelcolor)
+        Observable(style.disabledbuttonlabelcolor),
+        Observable(style.fadedlabelcolor)
     )
 end
 
@@ -96,6 +100,7 @@ function updatestyle!(currentstyle::CurrentStyle, newstyle::Style)
     currentstyle.disabledbuttoncolor_hover[] = newstyle.disabledbuttoncolor_hover
     currentstyle.disabledbuttoncolor_active[] = newstyle.disabledbuttoncolor_active
     currentstyle.disabledbuttonlabelcolor[] = newstyle.disabledbuttonlabelcolor
+    currentstyle.fadedlabelcolor[] = newstyle.fadedlabelcolor
 end
 
 mutable struct Styles
