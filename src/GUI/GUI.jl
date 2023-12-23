@@ -106,7 +106,7 @@ function drawgraph!(appstate::AppState)::Axis
     lines!(axis, xs, ys, color=style.signalcolor)
 
     data = collect(zip(xs, ys))
-    @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter = appstate.flexpoints
+    @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter, mspp, frequency, devv = appstate.flexpoints
     @unpack m1, m2, m3 = mfilter
     datafiltered, indices = flexpoints(
         data,
@@ -117,7 +117,8 @@ function drawgraph!(appstate::AppState)::Axis
                 noisefilter.derivatives[],
                 noisefilter.filtersize[]
             ),
-            MFilterParameters(m1[], m2[], m3[])
+            MFilterParameters(m1[], m2[], m3[]),
+            mspp[], frequency[], devv[]
         )
     )
 

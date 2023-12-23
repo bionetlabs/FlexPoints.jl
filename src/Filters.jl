@@ -12,7 +12,13 @@ using FlexPoints
 @with_kw mutable struct NoiseFilterParameters
     data::Bool = true
     derivatives::Bool = true
-    filtersize::Unsigned = 5
+    filtersize::Unsigned = 3
+end
+
+@with_kw mutable struct MFilterParameters
+    m1::Float64 = 0.0
+    m2::Float64 = 0.0
+    m3::Float64 = 0.0
 end
 
 function signal2noise(x::Vector, y::Vector, errflimit::Float64)
@@ -96,12 +102,6 @@ function noisefilter(
         smean[length(data)-filtersize:length(data)] .= smean[length(data)-filtersize-1]
     end
     smean
-end
-
-mutable struct MFilterParameters
-    m1::Float64
-    m2::Float64
-    m3::Float64
 end
 
 function mfilter(

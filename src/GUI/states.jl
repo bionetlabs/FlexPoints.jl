@@ -39,7 +39,7 @@ end
 @with_kw struct FlexPointsNoiseFilter
     data::Observable{Bool} = true
     derivatives::Observable{Bool} = true
-    filtersize::Observable{UInt} = 5
+    filtersize::Observable{UInt} = 3
 end
 
 @with_kw struct FlexPointsSettings
@@ -49,6 +49,9 @@ end
     ∂4::Observable{Bool} = false
     noisefilter::FlexPointsNoiseFilter = FlexPointsNoiseFilter()
     mfilter::FlexPointsMFilter = FlexPointsMFilter()
+    mspp::Observable{Unsigned} = 5
+    frequency::Observable{Unsigned} = 360
+    devv::Observable{Float64} = 0.6
 end
 
 @with_kw struct FlexPointsPerformance
