@@ -16,7 +16,7 @@ using FlexPoints
 end
 
 @with_kw mutable struct MFilterParameters
-    m1::Float64 = 5e-4
+    m1::Float64 = 2e-4
     m2::Float64 = 2e-4
     m3::Float64 = 0.0
 end
