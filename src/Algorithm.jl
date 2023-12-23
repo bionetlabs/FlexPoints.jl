@@ -12,7 +12,8 @@ using FlexPoints
     mfilter::MFilterParameters = MFilterParameters()
     mspp::Unsigned = 5 # minimum samples per period
     frequency::Unsigned = 360 # number of samples of signal per second 
-    devv::Float64 = 0.6 # statistical measure for outliers in terms of standard deviation
+    devv::Float64 = 1.0 # statistical measure for outliers in terms of standard deviation
+    removeoutliers::Bool = true
 end
 
 function flexpointsremoval(
@@ -30,15 +31,30 @@ function outliersremove(
 )::Vector{Int}
     @unpack mspp, frequency, devv = params
     blank = frequency / mspp # max size of the blank space - space on x axis without samples
-    datamean = mean(data)
-    datastd = std(data)
-    highoutlier = datamean + devv * datastd
-    lowoutlier = datamean - devv * datastd
+    winmean = mean(data)
+    winstd = std(data)
+    highoutlier = winmean + devv * winstd
+    lowoutlier = winmean - devv * winstd
     removeo = []
 
     current = 0 # current counts in which windows outliers are specified
+    for i in 2:(length(points)-1)
+        if ceil(points[i]/frequency)>current && 0<=length(data)-(current+1)*frequency
+            currentdata = data[UInt(current*frequency+1):UInt(current+1*frequency)]
+            winmean=mean(currentdata)
+            winstd=std(currentdata)
+            highoutlier=winmean+devv*winstd;
+            lowoutlier=winmean-devv*winstd;
+            current=ceil(points[i]/frequency);
+        end
+        if abs(data[points[i]])>highoutlier && (data[points[i]]-data[points[i]-1])*(data[points[i]]-data[points[i]+1])<0
+            push!(removeo, i)
+        elseif abs(data[points[i]])<lowoutlier && (data[points[i]]-data[points[i]-1])*(data[points[i]]-data[points[i]+1])<0
+            push!(removeo, i)
+        end
+    end
 
-    points
+    filter(p -> !(p in removeo), points) |> collect
 end
 
 
@@ -72,24 +88,26 @@ function flexpoints(
 
     if params.noisefilter.derivatives
         if !isnothing(∂1data) && !isempty(∂1data)
-            ∂1data = noisefilter(∂1data, params.noisefilter.filtersize)
+            ∂1data = noisefilter(∂1data, UInt(2))
         end
         if !isnothing(∂2data) && !isempty(∂2data)
-            ∂2data = noisefilter(∂2data, params.noisefilter.filtersize)
+            ∂2data = noisefilter(∂2data, UInt(2))
         end
         if !isnothing(∂3data) && !isempty(∂3data)
-            ∂3data = noisefilter(∂3data, params.noisefilter.filtersize)
+            ∂3data = noisefilter(∂3data, UInt(2))
         end
         if !isnothing(∂4data) && !isempty(∂4data)
-            ∂4data = noisefilter(∂4data, params.noisefilter.filtersize)
+            ∂4data = noisefilter(∂4data, UInt(2))
         end
     end
 
     derivatives = DerivativesData(∂1data, ∂2data, ∂3data, ∂4data)
 
-    validzeros = mfilter(derivatives, dselector, params.mfilter)
+    validpoints = mfilter(derivatives, dselector, params.mfilter)
 
-    validpoints = flexpointsremoval(datafiltered, validzeros, params)
+    if params.removeoutliers
+        validpoints = flexpointsremoval(datafiltered, validpoints, params)
+    end
 
     datafiltered, validpoints
 end

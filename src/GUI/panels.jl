@@ -78,7 +78,8 @@ end
 function drawalgorithms(appstate::AppState)
     style = currentstyle(appstate)
     @unpack leftpanel, flexpoints, databounds, applychanges = appstate
-    @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter = flexpoints
+    @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter, 
+        mspp, devv, removeoutliers = flexpoints
     @unpack m1, m2, m3 = mfilter
     index = Ref(0)
     header(leftpanel[nextint(index), 1:5], "∂ algorithm settings", currentstyle(appstate))
@@ -90,26 +91,44 @@ function drawalgorithms(appstate::AppState)
     tag(leftpanel[index[], 5], rich("∂", subscript("4")), ∂4, style)
 
     for (i, m) in enumerate((m1, m2, m3))
-        slider(
+        sliderfloat(
             leftpanel,
             nextint(index)[],
             rich("∂", subscript(string(i)), rich(" m", subscript("filter"), ":")),
             m,
-            databounds,
-            style;
-            defaultrate=DEFAULT_MFILTER_RATE,
-            scalefactor=DEFAULT_MFILTER_SCALE_FACTOR
+            Observable((0.0,  1e-3)),
+            style
         )
     end
 
     text(leftpanel[nextint(index), 1], rich("n", subscript("filter"), " for:"), style)
     tag(leftpanel[index[], 2:3], "data", noisefilter.data, style)
     tag(leftpanel[index[], 4:5], "derivatives", noisefilter.derivatives, style)
-    sliderunsigned(
+    slider(
         leftpanel,
         nextint(index)[],
         rich("n", subscript("filter"), " size:"),
         noisefilter.filtersize,
+        Observable((UInt(1), UInt(20))),
+        style
+    )
+    
+    tag(leftpanel[nextint(index), 1:5], "remove outliers", removeoutliers, style)
+    
+    sliderfloat(
+        leftpanel,
+        nextint(index)[],
+        rich("devv:"),
+        devv,
+        Observable((0.0, 10.0)),
+        style
+    )
+    
+    slider(
+        leftpanel,
+        nextint(index)[],
+        rich("mspp:"),
+        mspp,
         Observable((UInt(1), UInt(20))),
         style
     )

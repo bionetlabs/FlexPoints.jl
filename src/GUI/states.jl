@@ -5,9 +5,6 @@ using OrderedCollections
 
 include("styles.jl")
 
-const DEFAULT_MFILTER_RATE::Float64 = 0.1
-const DEFAULT_MFILTER_SCALE_FACTOR = 500
-
 @enum PanelIndex begin
     leftpanel = 1
     rightpanel = 3
@@ -31,27 +28,28 @@ mutable struct TopBarState
 end
 
 @with_kw struct FlexPointsMFilter
-    m1::Observable{Float64} = 0.0
-    m2::Observable{Float64} = 0.0
+    m1::Observable{Float64} = 5e-4
+    m2::Observable{Float64} = 2e-4
     m3::Observable{Float64} = 0.0
 end
 
 @with_kw struct FlexPointsNoiseFilter
     data::Observable{Bool} = true
     derivatives::Observable{Bool} = true
-    filtersize::Observable{UInt} = 3
+    filtersize::Observable{UInt} = 7
 end
 
 @with_kw struct FlexPointsSettings
-    ∂1::Observable{Bool} = false
+    ∂1::Observable{Bool} = true
     ∂2::Observable{Bool} = false
     ∂3::Observable{Bool} = true
     ∂4::Observable{Bool} = false
     noisefilter::FlexPointsNoiseFilter = FlexPointsNoiseFilter()
     mfilter::FlexPointsMFilter = FlexPointsMFilter()
-    mspp::Observable{Unsigned} = 5
-    frequency::Observable{Unsigned} = 360
-    devv::Observable{Float64} = 0.6
+    mspp::Observable{UInt} = 5
+    frequency::Observable{UInt} = 360
+    devv::Observable{Float64} = 1.0
+    removeoutliers::Observable{Bool} = true
 end
 
 @with_kw struct FlexPointsPerformance

@@ -412,41 +412,33 @@ function toggle(target, label::String, state::Observable{Bool})
     end
 end
 
-function slider(
+function sliderfloat(
     target,
     rowindex::Integer,
     label,
     targetvalue::Observable{T},
     databounds::Observable{Tuple{T,T}},
-    style::CurrentStyle;
-    defaultrate::Float64=0.0,
-    scalefactor::Number=1
+    style::CurrentStyle
 ) where {T<:Number}
     text(target[rowindex, 1], label, style)
     range = @lift begin
         bounds = $(databounds)
-        LinRange(0, (bounds[2] - bounds[1]) / scalefactor, 1000)
+        LinRange(bounds[1], bounds[2], 1000)
     end
-    # startvalue = lift(range) do range
-    #     range.start + (range.stop - range.start) * defaultrate
-    # end
-    slider = Slider(target[rowindex, 2:4], range=range, startvalue=targetvalue)
-    # on(range) do range
-    #     slider.selected_index[] = range.len * defaultrate
-    # end
+    sliderfloat = Slider(target[rowindex, 2:4], range=range, startvalue=targetvalue[])
     slidervalue = @lift begin
-        range = $(slider.range)
+        range = $(sliderfloat.range)
         start = range.start
         stop = range.stop
         step = (stop - start) / range.len
-        value = start + step * $(slider.selected_index)
+        value = start + step * $(sliderfloat.selected_index)
         targetvalue[] = T(value)
         @sprintf "%.5f" value
     end
     text(target[rowindex, 5], slidervalue, style)
 end
 
-function sliderunsigned(
+function slider(
     target,
     rowindex::Integer,
     label,

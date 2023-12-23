@@ -12,12 +12,12 @@ using FlexPoints
 @with_kw mutable struct NoiseFilterParameters
     data::Bool = true
     derivatives::Bool = true
-    filtersize::Unsigned = 3
+    filtersize::Unsigned = 7
 end
 
 @with_kw mutable struct MFilterParameters
-    m1::Float64 = 0.0
-    m2::Float64 = 0.0
+    m1::Float64 = 5e-4
+    m2::Float64 = 2e-4
     m3::Float64 = 0.0
 end
 
