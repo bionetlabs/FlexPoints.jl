@@ -28,8 +28,8 @@ mutable struct TopBarState
 end
 
 @with_kw struct FlexPointsMFilter
-    m1::Observable{Float64} = 2e-4
-    m2::Observable{Float64} = 2e-4
+    m1::Observable{Float64} = 1.5e-4
+    m2::Observable{Float64} = 1.5e-4
     m3::Observable{Float64} = 0.0
 end
 
@@ -50,7 +50,7 @@ end
     frequency::Observable{UInt} = 360
     devv::Observable{Float64} = 1.0
     removeoutliers::Observable{Bool} = true
-    yresolution::Observable{Float64} = 0.025
+    yresolution::Observable{Float64} = 0.02
 end
 
 @with_kw struct FlexPointsPerformance

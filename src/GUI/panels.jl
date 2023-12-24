@@ -78,8 +78,8 @@ end
 function drawalgorithms(appstate::AppState)
     style = currentstyle(appstate)
     @unpack leftpanel, flexpoints, databounds, applychanges = appstate
-    @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter, 
-        mspp, devv, removeoutliers, yresolution = flexpoints
+    @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter,
+    mspp, devv, removeoutliers, yresolution = flexpoints
     @unpack m1, m2, m3 = mfilter
     index = Ref(0)
     header(leftpanel[nextint(index), 1:5], "∂ algorithm settings", currentstyle(appstate))
@@ -96,7 +96,7 @@ function drawalgorithms(appstate::AppState)
             nextint(index)[],
             rich("∂", subscript(string(i)), rich(" m", subscript("filter"), ":")),
             m,
-            Observable((0.0,  1e-3)),
+            Observable((0.0, 1e-3)),
             style
         )
     end
@@ -112,9 +112,9 @@ function drawalgorithms(appstate::AppState)
         Observable((UInt(1), UInt(20))),
         style
     )
-    
+
     tag(leftpanel[nextint(index), 1:5], "remove outliers", removeoutliers, style)
-    
+
     sliderfloat(
         leftpanel,
         nextint(index)[],
@@ -123,7 +123,7 @@ function drawalgorithms(appstate::AppState)
         Observable((0.0, 10.0)),
         style
     )
-    
+
     slider(
         leftpanel,
         nextint(index)[],

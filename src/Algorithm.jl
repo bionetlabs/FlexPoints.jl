@@ -14,7 +14,7 @@ using FlexPoints
     frequency::Unsigned = 360 # number of samples of signal per second 
     devv::Float64 = 1.0 # statistical measure for outliers in terms of standard deviation
     removeoutliers::Bool = true
-    yresolution::Float64 = 0.025 # values with smaller Δ are considered as one point 
+    yresolution::Float64 = 0.0175 # values with smaller Δ are considered as one point 
 end
 
 function flexpointsremoval(
@@ -23,12 +23,16 @@ function flexpointsremoval(
     params::FlexPointsParameters
 )::Vector{Int}
     if params.removeoutliers
-        points = outliersremove(data, points, params)
+        points = removeoutliers(data, points, params)
     end
-    yresolution(data, points, params)
+    points = yresolution(data, points, params)
+    points = removelinear(data, points, params)
+    points = findsinusoid(data, points, params)
+    points = removelinear(data, points, params)
+    points
 end
 
-function outliersremove(
+function removeoutliers(
     data::Vector{Float64},
     points::Vector{Int},
     params::FlexPointsParameters
@@ -43,17 +47,17 @@ function outliersremove(
 
     current = 0 # current counts in which windows outliers are specified
     for i in 2:(length(points)-1)
-        if ceil(points[i]/frequency)>current && 0<=length(data)-(current+1)*frequency
-            currentdata = data[UInt(current*frequency+1):UInt(current+1*frequency)]
-            winmean=mean(currentdata)
-            winstd=std(currentdata)
-            highoutlier=winmean+devv*winstd;
-            lowoutlier=winmean-devv*winstd;
-            current=ceil(points[i]/frequency);
+        if ceil(points[i] / frequency) > current && 0 <= length(data) - (current + 1) * frequency
+            currentdata = data[UInt(current * frequency + 1):UInt(current + 1 * frequency)]
+            winmean = mean(currentdata)
+            winstd = std(currentdata)
+            highoutlier = winmean + devv * winstd
+            lowoutlier = winmean - devv * winstd
+            current = ceil(points[i] / frequency)
         end
-        if abs(data[points[i]])>highoutlier && (data[points[i]]-data[points[i]-1])*(data[points[i]]-data[points[i]+1])<0
+        if abs(data[points[i]]) > highoutlier && (data[points[i]] - data[points[i]-1]) * (data[points[i]] - data[points[i]+1]) < 0
             push!(toremove, i)
-        elseif abs(data[points[i]])<lowoutlier && (data[points[i]]-data[points[i]-1])*(data[points[i]]-data[points[i]+1])<0
+        elseif abs(data[points[i]]) < lowoutlier && (data[points[i]] - data[points[i]-1]) * (data[points[i]] - data[points[i]+1]) < 0
             push!(toremove, i)
         end
     end
@@ -80,6 +84,64 @@ function yresolution(
     end
 
     filter(p -> !(p in toremove), points) |> collect
+end
+
+function removelinear(
+    data::Vector{Float64},
+    points::Vector{Int},
+    params::FlexPointsParameters
+)::Vector{Int}
+    @unpack yresolution = params
+    toremove = []
+
+    firstpoint, middlepoint, lastpoint = points[1:3]
+    for lastpoint in points[3:end]
+        line = [
+            (Float64(firstpoint), data[firstpoint]),
+            (Float64(lastpoint), data[lastpoint])
+        ]
+        prediction = Float64(linapprox(line, middlepoint))
+        if abs(data[middlepoint] - prediction) < yresolution
+            push!(toremove, middlepoint)
+        else
+            firstpoint = middlepoint
+        end
+        middlepoint = lastpoint
+    end
+
+    filter(p -> !(p in toremove), points) |> collect
+end
+
+function findsinusoid(
+    data::Vector{Float64},
+    points::Vector{Int},
+    params::FlexPointsParameters
+)::Vector{Int}
+    @unpack yresolution = params
+    toadd = []
+
+    for (i, lastpoint) in enumerate(points[2:end])
+        firstpoint = points[i]
+        line = [
+            (Float64(firstpoint), data[firstpoint]),
+            (Float64(lastpoint), data[lastpoint])
+        ]
+        toperror = 0
+        topindex = nothing
+        for li in firstpoint:lastpoint
+            prediction = Float64(linapprox(line, li))
+            error = abs(data[li] - prediction)
+            if error > toperror
+                topindex = li
+                toperror = error
+            end
+        end
+        if !isnothing(topindex) && toperror > yresolution
+            push!(toadd, topindex)
+        end
+    end
+
+    sort(union(points, toadd))
 end
 
 
@@ -130,7 +192,7 @@ function flexpoints(
 
     validpoints = mfilter(derivatives, dselector, params.mfilter)
 
-    validpoints = flexpointsremoval(datafiltered, validpoints, params)    
+    validpoints = flexpointsremoval(datafiltered, validpoints, params)
 
     datafiltered, validpoints
 end
