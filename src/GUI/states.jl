@@ -122,7 +122,7 @@ function dataframe!(appstate::AppState)
     for (name, active) in appstate.datasources
         if active[]
             df = csv2df(
-                joinpath(appstate.datadir[], string(name))
+                joinpath(appstate.datadir[], string(name)); limit=20
             )
             appstate.dataframe[] = df
             appstate.series = OrderedDict(

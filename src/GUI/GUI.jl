@@ -11,7 +11,6 @@ import FreeTypeAbstraction.FTFont
 using FlexPoints
 
 include("panels.jl")
-include("data.jl")
 
 function gui(;
     resolution=primary_resolution(), darkmode=true
@@ -112,8 +111,8 @@ function drawgraph!(appstate::AppState)::Axis
     bounds = appstate.databounds[]
     datafiltered, indices = flexpoints(
         data,
-        DerivativesSelector(∂1[], ∂2[], ∂3[], ∂4[]),
         FlexPointsParameters(
+            DerivativesSelector(∂1[], ∂2[], ∂3[], ∂4[]),
             NoiseFilterParameters(
                 noisefilter.data[],
                 noisefilter.derivatives[],

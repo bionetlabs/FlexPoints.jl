@@ -8,6 +8,7 @@ using Statistics
 using FlexPoints
 
 @with_kw struct FlexPointsParameters
+    dselector::DerivativesSelector = DerivativesSelector()
     noisefilter::NoiseFilterParameters = NoiseFilterParameters()
     mfilter::MFilterParameters = MFilterParameters()
     mspp::Unsigned = 5 # minimum samples per period
@@ -150,12 +151,11 @@ end
 # then the first and the third derivative will be used.
 function flexpoints(
     data::Points2D,
-    dselector::DerivativesSelector,
     params::FlexPointsParameters
 )::Tuple{Vector{Float64},Vector{Int}}
     @assert !isempty(data)
     requiredlen = length(data) ÷ 2 - 1
-    maxderivative = topderivative(dselector)
+    maxderivative = topderivative(params.dselector)
     maxderivative == 0 && error("at least one derivative should be used")
     @assert requiredlen >= maxderivative
 
@@ -190,7 +190,7 @@ function flexpoints(
 
     derivatives = DerivativesData(∂1data, ∂2data, ∂3data, ∂4data)
 
-    validpoints = mfilter(derivatives, dselector, params.mfilter)
+    validpoints = mfilter(derivatives, params.dselector, params.mfilter)
 
     validpoints = flexpointsremoval(datafiltered, validpoints, params)
 
