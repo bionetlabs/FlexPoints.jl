@@ -7,10 +7,8 @@ using InteractiveUtils
 # ╔═╡ a5921210-a1ff-11ee-3a16-17cde0f76b44
 begin
 	using Pkg
-	Pkg.add("PlutoUI")
 	cd(joinpath(@__DIR__, ".."))
 	Pkg.activate(".")
-	using PlutoUI
 	using FlexPoints
 end
 
@@ -31,19 +29,15 @@ MIT_BIH_ARRHYTHMIA_5K
 MIT_BIH_ARRHYTHMIA_FULL
 
 # ╔═╡ 7d58c877-acfa-4dfe-bc1d-ce5c6073f857
-with_terminal() do
-	results2k = benchmark(MIT_BIH_ARRHYTHMIA_2K)
-end
+# ╠═╡ show_logs = false
+@time results2k = benchmark(MIT_BIH_ARRHYTHMIA_2K)
 
 # ╔═╡ c2a29ac7-5726-4bc6-9b93-22fbb4972f01
-with_terminal() do
-	results5k = benchmark(MIT_BIH_ARRHYTHMIA_5K)
-end
+# ╠═╡ show_logs = false
+@time results5k = benchmark(MIT_BIH_ARRHYTHMIA_5K)
 
 # ╔═╡ 52aae532-e39b-48f1-a8ad-c5879648f6e5
-with_terminal() do
-	resultsfull = benchmark(MIT_BIH_ARRHYTHMIA_FULL)
-end
+@time resultsfull = benchmark(MIT_BIH_ARRHYTHMIA_FULL)
 
 # ╔═╡ Cell order:
 # ╠═a5921210-a1ff-11ee-3a16-17cde0f76b44
