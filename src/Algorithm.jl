@@ -15,7 +15,7 @@ using FlexPoints
     frequency::Unsigned = 360 # number of samples of signal per second 
     devv::Float64 = 1.0 # statistical measure for outliers in terms of standard deviation
     removeoutliers::Bool = true
-    yresolution::Float64 = 0.0175 # values with smaller Δ are considered as one point 
+    yresolution::Float64 = 0.025 # values with smaller Δ are considered as one point 
 end
 
 function flexpointsremoval(
@@ -101,8 +101,10 @@ function removelinear(
             (Float64(firstpoint), data[firstpoint]),
             (Float64(lastpoint), data[lastpoint])
         ]
-        prediction = Float64(linapprox(line, middlepoint))
-        if abs(data[middlepoint] - prediction) < yresolution
+        # prediction = Float64(linapprox(line, middlepoint))
+        # error = abs(data[middlepoint] - prediction)
+        error = midpointerror(line, (Float64(middlepoint), data[middlepoint]))
+        if error < yresolution
             push!(toremove, middlepoint)
         else
             firstpoint = middlepoint
@@ -130,8 +132,9 @@ function findsinusoid(
         toperror = 0
         topindex = nothing
         for li in firstpoint:lastpoint
-            prediction = Float64(linapprox(line, li))
-            error = abs(data[li] - prediction)
+            # prediction = Float64(linapprox(line, li))
+            # error = abs(data[li] - prediction)
+            error = midpointerror(line, (Float64(li), data[li]))
             if error > toperror
                 topindex = li
                 toperror = error
