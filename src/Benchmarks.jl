@@ -1,6 +1,6 @@
 module Benchmarks
 
-export benchmark, MIT_BIH_ARRHYTHMIA_2K, MIT_BIH_ARRHYTHMIA_5K, MIT_BIH_ARRHYTHMIA_FULL
+export benchmark, benchmarkthreads, MIT_BIH_ARRHYTHMIA_2K, MIT_BIH_ARRHYTHMIA_5K, MIT_BIH_ARRHYTHMIA_FULL
 
 using DataFrames
 using Statistics

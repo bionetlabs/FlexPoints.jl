@@ -7,7 +7,7 @@ using Statistics
 
 using FlexPoints
 
-@with_kw struct FlexPointsParameters
+@with_kw mutable struct FlexPointsParameters
     dselector::DerivativesSelector = DerivativesSelector()
     noisefilter::NoiseFilterParameters = NoiseFilterParameters()
     mfilter::MFilterParameters = MFilterParameters()
@@ -15,7 +15,20 @@ using FlexPoints
     frequency::Unsigned = 360 # number of samples of signal per second 
     devv::Float64 = 1.0 # statistical measure for outliers in terms of standard deviation
     removeoutliers::Bool = true
-    yresolution::Float64 = 0.025 # values with smaller Δ are considered as one point 
+    yresolution::Float64 = 0.0175 # values with smaller Δ are considered as one point 
+end
+
+function Base.copy(params::FlexPointsParameters)
+    FlexPointsParameters(
+        dselector=params.dselector,
+        noisefilter=params.noisefilter,
+        mfilter=params.mfilter,
+        mspp=params.mspp,
+        frequency=params.frequency,
+        devv=params.devv,
+        removeoutliers=params.removeoutliers,
+        yresolution=params.yresolution,
+    )
 end
 
 function flexpointsremoval(
@@ -164,6 +177,10 @@ function flexpoints(
 
     datax = map(point -> x(point), data)
     datay = map(point -> y(point), data)
+    maxvalue = maximum(datay)
+    minvalue = minimum(datay)
+    params = copy(params)
+    params.yresolution = params.yresolution * (Float64(maxvalue) - Float64(minvalue))
 
     datafiltered = if params.noisefilter.data
         noisefilter(datay, params.noisefilter.filtersize)
