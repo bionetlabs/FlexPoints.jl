@@ -1,9 +1,11 @@
 module Benchmarks
 
-export benchmark, benchmarkthreads, MIT_BIH_ARRHYTHMIA_2K, MIT_BIH_ARRHYTHMIA_5K, MIT_BIH_ARRHYTHMIA_FULL
+export benchmark, benchmarkthreads, MIT_BIH_ARRHYTHMIA_2K, MIT_BIH_ARRHYTHMIA_5K, MIT_BIH_ARRHYTHMIA_FULL,
+    geneticsearch, gridsearch
 
 using DataFrames
 using Statistics
+using Evolutionary
 
 using FlexPoints
 
@@ -14,9 +16,10 @@ const MIT_BIH_ARRHYTHMIA_FULL = "data/mit_bih_arrhythmia_full.csv"
 function benchmark(
     datafile::String=MIT_BIH_ARRHYTHMIA_2K;
     parameters=FlexPointsParameters(),
-    filteredreference::Bool=false
+    filteredreference::Bool=false,
+    verbose=true
 )::DataFrame
-    println("loading $datafile")
+    println("loading $datafile, threadid $(Threads.threadid())")
     datadf = csv2df(datafile)
     cfs = []
     rmses = []
@@ -29,7 +32,7 @@ function benchmark(
     seriesnames = []
 
     for seriesname in names(datadf)
-        println("benchmarking $seriesname, threadid $(Threads.threadid())")
+        verbose && println("benchmarking $seriesname, threadid $(Threads.threadid())")
         ys = datadf[!, seriesname]
         datalen = length(ys)
         xs = LinRange(0, (datalen - 1) / SAMPES_PER_MILLISECOND, datalen)
@@ -58,7 +61,6 @@ function benchmark(
     end
 
     push!(seriesnames, "mean")
-    println(cfs, typeof(cfs))
     push!(cfs, mean(cfs))
     push!(rmses, mean(rmses))
     push!(nrmses, mean(nrmses))
@@ -84,9 +86,10 @@ end
 function benchmarkthreads(
     datafile::String=MIT_BIH_ARRHYTHMIA_2K;
     parameters=FlexPointsParameters(),
-    filteredreference::Bool=false
+    filteredreference::Bool=false,
+    verbose=true
 )::DataFrame
-    println("loading $datafile")
+    println("loading $datafile, threadid $(Threads.threadid())")
     datadf = csv2df(datafile)
     cfs = []
     rmses = []
@@ -100,7 +103,7 @@ function benchmarkthreads(
 
     mutex = ReentrantLock()
     Threads.@threads for seriesname in names(datadf)
-        println("benchmarking $seriesname, threadid $(Threads.threadid())")
+        verbose && println("benchmarking $seriesname, threadid $(Threads.threadid())")
         ys = datadf[!, seriesname]
         datalen = length(ys)
         xs = LinRange(0, (datalen - 1) / SAMPES_PER_MILLISECOND, datalen)
@@ -154,6 +157,50 @@ function benchmarkthreads(
         :nprd => nprds,
         :qs => qss,
         :nqs => nqss,
+    )
+end
+
+function gridsearch(
+    datafile::String=MIT_BIH_ARRHYTHMIA_2K;
+    filteredreference::Bool=false
+)
+
+end
+
+function geneticsearch(
+    datafile::String=MIT_BIH_ARRHYTHMIA_2K;
+    filteredreference::Bool=false,
+    iterations=10,
+    populationsize=10
+)
+    function f(x)
+        parameters = FlexPointsParameters()
+        parameters.yresolution = x[1]
+        parameters.noisefilter.filtersize = round(UInt, x[2])
+        df = benchmark(datafile; parameters=parameters, filteredreference=filteredreference)
+        qs = df[df.lead.=="mean", :qs][1]
+        -qs # due to minimization problem
+    end
+
+    ga = GA(
+        populationSize=populationsize,
+        selection=uniformranking(3),
+        mutation=gaussian(),
+        crossover=uniformbin()
+    )
+
+    defaultparams = FlexPointsParameters()
+    lower = [1e-3, 1]
+    upper = [1e-1, 10]
+    constraints = BoxConstraints(lower, upper)
+    x0 = [defaultparams.yresolution, parameters.noisefilter.filtersize]
+
+    Evolutionary.optimize(
+        f,
+        constraints,
+        x0,
+        ga,
+        Evolutionary.Options(iterations=iterations, parallelization=:thread, show_trace=true)
     )
 end
 

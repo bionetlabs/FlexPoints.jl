@@ -49,8 +49,8 @@ end
     mspp::Observable{UInt} = 5
     frequency::Observable{UInt} = 360
     devv::Observable{Float64} = 1.0
-    removeoutliers::Observable{Bool} = true
-    yresolution::Observable{Float64} = 0.025
+    removeoutliers::Observable{Bool} = false
+    yresolution::Observable{Float64} = 0.0175
 end
 
 @with_kw struct FlexPointsPerformance

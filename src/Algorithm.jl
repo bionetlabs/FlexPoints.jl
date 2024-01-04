@@ -14,7 +14,7 @@ using FlexPoints
     mspp::Unsigned = 5 # minimum samples per period
     frequency::Unsigned = 360 # number of samples of signal per second 
     devv::Float64 = 1.0 # statistical measure for outliers in terms of standard deviation
-    removeoutliers::Bool = true
+    removeoutliers::Bool = false
     yresolution::Float64 = 0.0175 # values with smaller Δ are considered as one point 
 end
 

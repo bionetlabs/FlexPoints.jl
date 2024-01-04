@@ -120,7 +120,7 @@ function drawgraph!(appstate::AppState)::Axis
             ),
             MFilterParameters(m1[], m2[], m3[]),
             mspp[], frequency[], devv[], removeoutliers[],
-            yresolution[] * (bounds[2] - bounds[1])
+            yresolution[] # yresolution[] * (bounds[2] - bounds[1])
         )
     )
 
