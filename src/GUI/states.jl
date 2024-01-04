@@ -50,7 +50,7 @@ end
     frequency::Observable{UInt} = 360
     devv::Observable{Float64} = 1.0
     removeoutliers::Observable{Bool} = false
-    yresolution::Observable{Float64} = 0.0175
+    yresolution::Observable{Float64} = 0.012
 end
 
 @with_kw struct FlexPointsPerformance

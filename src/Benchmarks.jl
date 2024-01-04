@@ -164,7 +164,35 @@ function gridsearch(
     datafile::String=MIT_BIH_ARRHYTHMIA_2K;
     filteredreference::Bool=false
 )
-
+    mutex = ReentrantLock()
+    bestqs = 0.0
+    bestparameters = FlexPointsParameters()
+    finished = 0
+    println("finished jobs: $finished")
+    Threads.@threads for yresolution in 0.01:0.001:0.03
+        for filtersize in 5:1:7
+            # for ∂filter in [true, false]
+            parameters = FlexPointsParameters()
+            parameters.yresolution = yresolution
+            parameters.noisefilter.filtersize = filtersize
+            # parameters.noisefilter.derivatives = ∂filter
+            df = benchmark(datafile; parameters=parameters, filteredreference=filteredreference, verbose=false)
+            qs = df[df.lead.=="mean", :qs][1]
+            lock(mutex)
+            try
+                if qs > bestqs
+                    bestqs = qs
+                    bestparameters = parameters
+                end
+                finished += 1
+                println("finished jobs: $finished")
+            finally
+                unlock(mutex)
+            end
+            # end
+        end
+    end
+    (bestqs, bestparameters)
 end
 
 function geneticsearch(
@@ -177,7 +205,7 @@ function geneticsearch(
         parameters = FlexPointsParameters()
         parameters.yresolution = x[1]
         parameters.noisefilter.filtersize = round(UInt, x[2])
-        df = benchmark(datafile; parameters=parameters, filteredreference=filteredreference)
+        df = benchmark(datafile; parameters=parameters, filteredreference=filteredreference, verbose=false)
         qs = df[df.lead.=="mean", :qs][1]
         -qs # due to minimization problem
     end
@@ -193,7 +221,7 @@ function geneticsearch(
     lower = [1e-3, 1]
     upper = [1e-1, 10]
     constraints = BoxConstraints(lower, upper)
-    x0 = [defaultparams.yresolution, parameters.noisefilter.filtersize]
+    x0 = [defaultparams.yresolution, defaultparams.noisefilter.filtersize]
 
     Evolutionary.optimize(
         f,

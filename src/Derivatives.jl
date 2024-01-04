@@ -14,7 +14,7 @@ using FlexPoints
 end
 
 @with_kw mutable struct DerivativesSelector
-    ∂1::Bool = true
+    ∂1::Bool = false
     ∂2::Bool = false
     ∂3::Bool = true
     ∂4::Bool = false

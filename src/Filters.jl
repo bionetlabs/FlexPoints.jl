@@ -11,7 +11,7 @@ using FlexPoints
 
 @with_kw mutable struct NoiseFilterParameters
     data::Bool = true
-    derivatives::Bool = true
+    derivatives::Bool = false
     filtersize::Unsigned = 7
 end
 
@@ -88,10 +88,8 @@ function noisefilter(
             if kk == 1
                 errflimit = 0.3
             elseif kk == 2
-                errflimit = 0.6
+                errflimit = 0.58
             elseif kk == 3
-                errflimit = 0.7
-            elseif kk == 4
                 errflimit = 0.7
             end
             currentsize, smeanlocal = checknoise(data, index, currentsize, errflimit)

@@ -15,7 +15,7 @@ using FlexPoints
     frequency::Unsigned = 360 # number of samples of signal per second 
     devv::Float64 = 1.0 # statistical measure for outliers in terms of standard deviation
     removeoutliers::Bool = false
-    yresolution::Float64 = 0.0175 # values with smaller Δ are considered as one point 
+    yresolution::Float64 = 0.02 # values with smaller Δ are considered as one point 
 end
 
 function Base.copy(params::FlexPointsParameters)
@@ -180,7 +180,7 @@ function flexpoints(
     maxvalue = maximum(datay)
     minvalue = minimum(datay)
     params = copy(params)
-    params.yresolution = params.yresolution * (Float64(maxvalue) - Float64(minvalue))
+    params.yresolution = 2params.yresolution + 0.2 * (params.yresolution * (Float64(maxvalue) - Float64(minvalue)))
 
     datafiltered = if params.noisefilter.data
         noisefilter(datay, params.noisefilter.filtersize)
