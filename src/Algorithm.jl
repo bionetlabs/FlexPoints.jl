@@ -17,8 +17,8 @@ using FlexPoints
     frequency::Unsigned = 360 # number of samples of signal per second 
     devv::Float64 = 1.0 # statistical measure for outliers in terms of standard deviation
     removeoutliers::Bool = false
-    yresolution::Float64 = 0.02 # values with smaller Δ are considered as one point 
-    polyapprox::UInt = 3
+    yresolution::Float64 = 0.021 # values with smaller Δ are considered as one point 
+    polyapprox::UInt = 6
     polyapprox_yresolutionratio::Float64 = 2.0
 end
 
@@ -47,7 +47,7 @@ function paramsapprox(yresolution::Float64)::FlexPointsParameters
         devv=1.0,
         removeoutliers=false,
         yresolution=yresolution,
-        polyapprox=1,
+        polyapprox=6,
         polyapprox_yresolutionratio=2.0
     )
 end
@@ -230,7 +230,7 @@ function flexpoints(
     maxvalue = maximum(datay)
     minvalue = minimum(datay)
     params = copy(params)
-    params.yresolution = 2params.yresolution + 0.2 * (params.yresolution * (Float64(maxvalue) - Float64(minvalue)))
+    params.yresolution = 2.0params.yresolution + 0.075 * (params.yresolution * (Float64(maxvalue) - Float64(minvalue)))
 
     datafiltered = if params.noisefilter.data
         noisefilter(datay, params.noisefilter.filtersize)
@@ -241,7 +241,7 @@ function flexpoints(
     ∂1data = maxderivative >= 1 ? ∂(collect(zip(datax, datafiltered)), 1) : nothing
     ∂2data = maxderivative >= 1 ? ∂(collect(zip(datax, ∂1data)), 2) : nothing
     ∂3data = maxderivative >= 2 ? ∂(collect(zip(datax, ∂2data)), 3) : nothing
-    ∂4data = maxderivative >= 3 ? ∂(collect(zip(datax, ∂3data)), 4) .* 5 / 3 : nothing
+    ∂4data = maxderivative >= 3 ? ∂(collect(zip(datax, ∂3data)), 4) : nothing
 
     if params.noisefilter.derivatives
         if !isnothing(∂1data) && !isempty(∂1data)
@@ -265,6 +265,8 @@ function flexpoints(
     validpoints = flexpointsremoval(datafiltered, validpoints, params)
 
     validpoints = polyapprox(datafiltered, validpoints, params)
+
+    # validpoints = removelinear(datafiltered, validpoints, params)
 
     datafiltered, validpoints
 end
