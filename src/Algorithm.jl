@@ -4,6 +4,8 @@ export flexpoints, FlexPointsParameters
 
 using Parameters
 using Statistics
+import Polynomials
+using DataStructures
 
 using FlexPoints
 
@@ -16,6 +18,7 @@ using FlexPoints
     devv::Float64 = 1.0 # statistical measure for outliers in terms of standard deviation
     removeoutliers::Bool = false
     yresolution::Float64 = 0.02 # values with smaller Δ are considered as one point 
+    polyapprox::UInt = 3
 end
 
 function Base.copy(params::FlexPointsParameters)
@@ -28,7 +31,48 @@ function Base.copy(params::FlexPointsParameters)
         devv=params.devv,
         removeoutliers=params.removeoutliers,
         yresolution=params.yresolution,
+        polyapprox=params.polyapprox,
     )
+end
+
+function paramsapprox(yresolution::Float64)::FlexPointsParameters
+    FlexPointsParameters(
+        dselector=DerivativesSelector(false, false, true, false),
+        noisefilter=NoiseFilterParameters(false, false, 1),
+        mfilter=MFilterParameters(0.0, 0.0, 0.0),
+        mspp=5,
+        frequency=360,
+        devv=1.0,
+        removeoutliers=false,
+        yresolution=yresolution,
+        polyapprox=1,
+    )
+end
+
+function polyapprox(
+    data::Vector{Float64},
+    points::Vector{Int},
+    params::FlexPointsParameters
+)::Vector{Int}
+    degree = params.polyapprox
+    if degree > 1
+        newpoints = SortedSet(points)
+        localparams = paramsapprox(params.yresolution / 2.0)
+        for i in 2:length(points)
+            segmentindices = points[i-1]:points[i]
+            if length(segmentindices) >= 10 # datalen ÷ 2 - 1 >= 4
+                segmentxs = Float64.(1:length(segmentindices))
+                segmentys = data[segmentindices]
+                polyfit = Polynomials.fit(segmentxs, segmentys, degree)
+                segmentdata = collect(zip(segmentxs, polyfit.(segmentxs)))
+                _datafiltered, validpoints = flexpoints(segmentdata, localparams)
+                push!(newpoints, (validpoints .+ (segmentindices[1] - 1))...)
+            end
+        end
+        collect(newpoints)
+    else
+        points
+    end
 end
 
 function flexpointsremoval(
@@ -105,6 +149,9 @@ function removelinear(
     points::Vector{Int},
     params::FlexPointsParameters
 )::Vector{Int}
+    if length(points) <= 2
+        return points
+    end
     @unpack yresolution = params
     toremove = []
 
@@ -213,6 +260,8 @@ function flexpoints(
     validpoints = mfilter(derivatives, params.dselector, params.mfilter)
 
     validpoints = flexpointsremoval(datafiltered, validpoints, params)
+
+    validpoints = polyapprox(datafiltered, validpoints, params)
 
     datafiltered, validpoints
 end

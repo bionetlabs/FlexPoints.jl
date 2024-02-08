@@ -40,7 +40,7 @@ end
 end
 
 @with_kw struct FlexPointsSettings
-    ∂1::Observable{Bool} = true
+    ∂1::Observable{Bool} = false
     ∂2::Observable{Bool} = false
     ∂3::Observable{Bool} = true
     ∂4::Observable{Bool} = false
@@ -51,6 +51,7 @@ end
     devv::Observable{Float64} = 1.0
     removeoutliers::Observable{Bool} = false
     yresolution::Observable{Float64} = 0.012
+    polyapprox::Observable{UInt} = 3
 end
 
 @with_kw struct FlexPointsPerformance

@@ -79,7 +79,7 @@ function drawalgorithms(appstate::AppState)
     style = currentstyle(appstate)
     @unpack leftpanel, flexpoints, databounds, applychanges = appstate
     @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter,
-    mspp, devv, removeoutliers, yresolution = flexpoints
+    mspp, devv, removeoutliers, yresolution, polyapprox = flexpoints
     @unpack m1, m2, m3 = mfilter
     index = Ref(0)
     header(leftpanel[nextint(index), 1:5], "∂ algorithm settings", currentstyle(appstate))
@@ -139,6 +139,15 @@ function drawalgorithms(appstate::AppState)
         rich("y", subscript("resolution"), ":"),
         yresolution,
         Observable((0.0, 0.2)),
+        style
+    )
+
+    slider(
+        leftpanel,
+        nextint(index)[],
+        rich("poly-approx:"),
+        polyapprox,
+        Observable((UInt(1), UInt(10))),
         style
     )
 

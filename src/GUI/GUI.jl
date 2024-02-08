@@ -109,7 +109,7 @@ function drawgraph!(appstate::AppState)::Axis
 
     data = collect(zip(xs, ys))
     @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter,
-    mspp, frequency, devv, removeoutliers, yresolution = appstate.flexpoints
+    mspp, frequency, devv, removeoutliers, yresolution, polyapprox = appstate.flexpoints
     @unpack m1, m2, m3 = mfilter
     bounds = appstate.databounds[]
     datafiltered, indices = flexpoints(
@@ -123,7 +123,7 @@ function drawgraph!(appstate::AppState)::Axis
             ),
             MFilterParameters(m1[], m2[], m3[]),
             mspp[], frequency[], devv[], removeoutliers[],
-            yresolution[] # yresolution[] * (bounds[2] - bounds[1])
+            yresolution[], polyapprox[] # yresolution[] * (bounds[2] - bounds[1])
         )
     )
 
@@ -171,8 +171,8 @@ function drawgraph!(appstate::AppState)::Axis
                 segmentxs = xs[segmentindices]
                 segmentys = ys[segmentindices]
 
-                qubicfit = Polynomials.fit(segmentxs, segmentys, 3)
-                lines!(axis, segmentxs, qubicfit.(segmentxs), color=style.approxsignalcolor)
+                polyfit = Polynomials.fit(segmentxs, segmentys, polyapprox[])
+                lines!(axis, segmentxs, polyfit.(segmentxs), color=style.approxsignalcolor)
             end
         end
     end
