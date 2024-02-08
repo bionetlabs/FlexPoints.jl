@@ -47,7 +47,7 @@ function paramsapprox(yresolution::Float64)::FlexPointsParameters
         devv=1.0,
         removeoutliers=false,
         yresolution=yresolution,
-        polyapprox=6,
+        polyapprox=1,
         polyapprox_yresolutionratio=2.0
     )
 end
