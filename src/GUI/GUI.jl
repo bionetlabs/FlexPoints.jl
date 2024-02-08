@@ -109,9 +109,9 @@ function drawgraph!(appstate::AppState)::Axis
 
     data = collect(zip(xs, ys))
     @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter,
-    mspp, frequency, devv, removeoutliers, yresolution, polyapprox = appstate.flexpoints
+    mspp, frequency, devv, removeoutliers,
+    yresolution, polyapprox, polyapprox_yresolutionratio = appstate.flexpoints
     @unpack m1, m2, m3 = mfilter
-    bounds = appstate.databounds[]
     datafiltered, indices = flexpoints(
         data,
         FlexPointsParameters(
@@ -123,7 +123,7 @@ function drawgraph!(appstate::AppState)::Axis
             ),
             MFilterParameters(m1[], m2[], m3[]),
             mspp[], frequency[], devv[], removeoutliers[],
-            yresolution[], polyapprox[] # yresolution[] * (bounds[2] - bounds[1])
+            yresolution[], polyapprox[], polyapprox_yresolutionratio[]
         )
     )
 

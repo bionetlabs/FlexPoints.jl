@@ -169,25 +169,27 @@ function gridsearch(
     bestparameters = FlexPointsParameters()
     finished = 0
     println("finished jobs: $finished")
-    Threads.@threads for yresolution in 0.001:0.003:0.03
-        for polyapprox in 1:10
-            parameters = FlexPointsParameters()
-            parameters.yresolution = yresolution
-            parameters.polyapprox = polyapprox
-            df = benchmark(datafile; parameters=parameters, filteredreference=filteredreference, verbose=false)
-            qs = df[df.lead.=="mean", :qs][1]
-            lock(mutex)
-            try
-                if qs > bestqs
-                    bestqs = qs
-                    bestparameters = parameters
+    Threads.@threads for yresolution in 0.001:0.01:0.05
+        for polyapprox in 3:7
+            for polyapprox_yresolutionratio in 1:5
+                parameters = FlexPointsParameters()
+                parameters.yresolution = yresolution
+                parameters.polyapprox = polyapprox
+                parameters.polyapprox_yresolutionratio = polyapprox_yresolutionratio
+                df = benchmark(datafile; parameters=parameters, filteredreference=filteredreference, verbose=false)
+                qs = df[df.lead.=="mean", :qs][1]
+                lock(mutex)
+                try
+                    if qs > bestqs
+                        bestqs = qs
+                        bestparameters = parameters
+                    end
+                    finished += 1
+                    println("finished jobs: $finished")
+                finally
+                    unlock(mutex)
                 end
-                finished += 1
-                println("finished jobs: $finished")
-            finally
-                unlock(mutex)
             end
-            # end
         end
     end
     (bestqs, bestparameters)

@@ -19,6 +19,7 @@ using FlexPoints
     removeoutliers::Bool = false
     yresolution::Float64 = 0.02 # values with smaller Δ are considered as one point 
     polyapprox::UInt = 3
+    polyapprox_yresolutionratio::Float64 = 2.0
 end
 
 function Base.copy(params::FlexPointsParameters)
@@ -32,6 +33,7 @@ function Base.copy(params::FlexPointsParameters)
         removeoutliers=params.removeoutliers,
         yresolution=params.yresolution,
         polyapprox=params.polyapprox,
+        polyapprox_yresolutionratio=params.polyapprox_yresolutionratio,
     )
 end
 
@@ -46,6 +48,7 @@ function paramsapprox(yresolution::Float64)::FlexPointsParameters
         removeoutliers=false,
         yresolution=yresolution,
         polyapprox=1,
+        polyapprox_yresolutionratio=2.0
     )
 end
 
@@ -57,7 +60,7 @@ function polyapprox(
     degree = params.polyapprox
     if degree > 1
         newpoints = SortedSet(points)
-        localparams = paramsapprox(params.yresolution / 2.0)
+        localparams = paramsapprox(params.yresolution / params.polyapprox_yresolutionratio)
         for i in 2:length(points)
             segmentindices = points[i-1]:points[i]
             if length(segmentindices) >= 10 # datalen ÷ 2 - 1 >= 4
