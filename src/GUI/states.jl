@@ -64,6 +64,14 @@ end
     nqs::Observable{Float64} = NaN
 end
 
+@with_kw struct ViewSettings
+    data::Observable{Bool} = true
+    filtered::Observable{Bool} = true
+    approximation::Observable{Bool} = true
+    flexpoints::Observable{Bool} = true
+    flexpointlines::Observable{Bool} = true
+end
+
 @with_kw mutable struct AppState
     figure::Figure
     topbar::TopBarState
@@ -86,6 +94,7 @@ end
     reconstruction::Observable{Vector{Float64}} = Vector{Float64}()
     performance::FlexPointsPerformance = FlexPointsPerformance()
     applychanges::Observable{Bool} = false
+    view::ViewSettings = ViewSettings()
 end
 
 function applystyle!(appstate::AppState)

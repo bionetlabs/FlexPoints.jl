@@ -5,6 +5,7 @@ export gui
 using GLMakie
 using Colors
 using DataFrames
+import Polynomials
 
 import FreeTypeAbstraction.FTFont
 
@@ -91,7 +92,7 @@ function emptygraph!(appstate::AppState)::Axis
 end
 
 function drawgraph!(appstate::AppState)::Axis
-    appstate.centralpanel
+    view = appstate.view
     style = currentstyle(appstate)
     axis = appstate.graph[]
     targetlimits = axis.targetlimits[]
@@ -102,7 +103,9 @@ function drawgraph!(appstate::AppState)::Axis
     xs = LinRange(0, (length(data) - 1) / SAMPES_PER_MILLISECOND, datalen)
     ys = data
 
-    lines!(axis, xs, ys, color=style.signalcolor)
+    if view.data[]
+        lines!(axis, xs, ys, color=style.signalcolor)
+    end
 
     data = collect(zip(xs, ys))
     @unpack ∂1, ∂2, ∂3, ∂4, mfilter, noisefilter,
@@ -124,7 +127,7 @@ function drawgraph!(appstate::AppState)::Axis
         )
     )
 
-    if noisefilter.data[]
+    if noisefilter.data[] && view.filtered[]
         lines!(axis, xs, datafiltered, color=style.filteredsignalcolor)
     end
 
@@ -136,17 +139,42 @@ function drawgraph!(appstate::AppState)::Axis
     # Threads.@spawn performance(appstate)
     performance(appstate)
     if length(indices) > 1
-        points = [data[i...] for i in indices]
-        scatterlines!(
-            axis,
-            points,
-            color=style.flexpointcolor,
-            linestyle=:dot,
-            markersize=8,
-            marker=:circle,
-            strokewidth=0.5,
-            strokecolor=style.disabledbuttoncolor,
-        )
+        points = [data[i] for i in indices]
+        if view.flexpoints[]
+            if view.flexpointlines[]
+                scatterlines!(
+                    axis,
+                    points,
+                    color=style.flexpointcolor,
+                    linestyle=:dot,
+                    markersize=8,
+                    marker=:circle,
+                    strokewidth=0.5,
+                    strokecolor=style.disabledbuttoncolor,
+                )
+            else
+                scatter!(
+                    axis,
+                    points,
+                    color=style.flexpointcolor,
+                    markersize=8,
+                    marker=:circle,
+                    strokewidth=0.5,
+                    strokecolor=style.disabledbuttoncolor,
+                )
+            end
+        end
+
+        if view.approximation[]
+            for i in 2:length(indices)
+                segmentindices = indices[i-1]:indices[i]
+                segmentxs = xs[segmentindices]
+                segmentys = ys[segmentindices]
+
+                qubicfit = Polynomials.fit(segmentxs, segmentys, 3)
+                lines!(axis, segmentxs, qubicfit.(segmentxs), color=style.approxsignalcolor)
+            end
+        end
     end
     axis.targetlimits[] = targetlimits
 

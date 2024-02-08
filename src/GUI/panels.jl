@@ -168,6 +168,19 @@ end
 
 function drawsettings(appstate::AppState)
     target = appstate.rightpanel
-    header(target[1, 1], "🞿 settings", currentstyle(appstate))
-    expander(target[2, 1])
+    index = Ref(0)
+    style = currentstyle(appstate)
+    style = currentstyle(appstate)
+    @unpack data, filtered, approximation, flexpoints, flexpointlines = appstate.view
+
+    target = appstate.rightpanel
+    header(target[nextint(index), 1], "🞿 settings", currentstyle(appstate))
+
+    tag(target[nextint(index), 1], "show data", data, style)
+    tag(target[nextint(index), 1], "show filtered data", filtered, style)
+    tag(target[nextint(index), 1], "show approximation data", approximation, style)
+    tag(target[nextint(index), 1], "show flexpoints", flexpoints, style)
+    tag(target[nextint(index), 1], "show flexpoint lines", flexpointlines, style)
+
+    expander(target[nextint(index), 1])
 end

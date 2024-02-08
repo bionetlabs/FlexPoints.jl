@@ -23,6 +23,7 @@ abstract type Style end
     flexpointcolor::RGBA = colorant"steelblue1"
     signalcolor::RGBA = colorant"sienna1"
     filteredsignalcolor::RGBA = colorant"springgreen2"
+    approxsignalcolor::RGBA = colorant"mistyrose2"
     enabledbuttoncolor::RGBA = colorant"ivory2"
     enabledbuttoncolor_hover::RGBA = colorant"ivory1"
     enabledbuttoncolor_active::RGBA = colorant"ivory1"
@@ -41,6 +42,7 @@ end
     flexpointcolor::RGBA = colorant"dodgerblue3"
     signalcolor::RGBA = colorant"brown1"
     filteredsignalcolor::RGBA = colorant"springgreen3"
+    approxsignalcolor::RGBA = colorant"mistyrose3"
     enabledbuttoncolor::RGBA = colorant"paleturquoise2"
     enabledbuttoncolor_hover::RGBA = colorant"paleturquoise1"
     enabledbuttoncolor_active::RGBA = colorant"paleturquoise1"
@@ -59,6 +61,7 @@ struct CurrentStyle
     flexpointcolor::Observable{RGBA}
     signalcolor::Observable{RGBA}
     filteredsignalcolor::Observable{RGBA}
+    approxsignalcolor::Observable{RGBA}
     enabledbuttoncolor::Observable{RGBA}
     enabledbuttoncolor_hover::Observable{RGBA}
     enabledbuttoncolor_active::Observable{RGBA}
@@ -78,6 +81,7 @@ function CurrentStyle(style::Style)::CurrentStyle
         Observable(style.flexpointcolor),
         Observable(style.signalcolor),
         Observable(style.filteredsignalcolor),
+        Observable(style.approxsignalcolor),
         Observable(style.enabledbuttoncolor),
         Observable(style.enabledbuttoncolor_hover),
         Observable(style.enabledbuttoncolor_active),
@@ -97,6 +101,7 @@ function updatestyle!(currentstyle::CurrentStyle, newstyle::Style)
     currentstyle.flexpointcolor[] = newstyle.flexpointcolor
     currentstyle.signalcolor[] = newstyle.signalcolor
     currentstyle.filteredsignalcolor[] = newstyle.filteredsignalcolor
+    currentstyle.approxsignalcolor[] = newstyle.approxsignalcolor
     currentstyle.enabledbuttoncolor[] = newstyle.enabledbuttoncolor
     currentstyle.enabledbuttoncolor_hover[] = newstyle.enabledbuttoncolor_hover
     currentstyle.enabledbuttoncolor_active[] = newstyle.enabledbuttoncolor_active
