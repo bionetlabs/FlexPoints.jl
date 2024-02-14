@@ -38,14 +38,14 @@ function benchmark(
         xs = LinRange(0, (datalen - 1) / SAMPES_PER_MILLISECOND, datalen)
         data = collect(zip(xs, ys))
         datafiltered, points = flexpoints(data, parameters)
+        if filteredreference
+            ys = datafiltered
+        end
         points2d = map(i -> (Float64(i), ys[i]), points)
         reconstruction = map(1:datalen) do x
             Float64(linapprox(points2d, x))
         end
 
-        if filteredreference
-            ys = datafiltered
-        end
         push!(seriesnames, seriesname)
         cf_ = cf(ys, points)
         push!(cfs, cf_)
@@ -109,14 +109,14 @@ function benchmarkthreads(
         xs = LinRange(0, (datalen - 1) / SAMPES_PER_MILLISECOND, datalen)
         data = collect(zip(xs, ys))
         datafiltered, points = flexpoints(data, parameters)
+        if filteredreference
+            ys = datafiltered
+        end
         points2d = map(i -> (Float64(i), ys[i]), points)
         reconstruction = map(1:datalen) do x
             Float64(linapprox(points2d, x))
         end
 
-        if filteredreference
-            ys = datafiltered
-        end
         lock(mutex)
         try
             push!(seriesnames, seriesname)
@@ -169,27 +169,27 @@ function gridsearch(
     bestparameters = FlexPointsParameters()
     finished = 0
     println("finished jobs: $finished")
-    Threads.@threads for yresolution in 0.01:0.02:0.3
-        # for polyapprox in 3:7
-        for filtersize in 1:10
-            parameters = FlexPointsParameters()
-            parameters.yresolution = yresolution
-            # parameters.polyapprox = polyapprox
-            parameters.noisefilter.filtersize = filtersize
-            df = benchmark(datafile; parameters=parameters, filteredreference=filteredreference, verbose=false)
-            qs = df[df.lead.=="mean", :qs][1]
-            lock(mutex)
-            try
-                if qs > bestqs
-                    bestqs = qs
-                    bestparameters = parameters
+    Threads.@threads for yresolution in 0.021:0.002:0.021
+        for polyapprox in 1:10
+            for filtersize in 7:7
+                parameters = FlexPointsParameters()
+                parameters.yresolution = yresolution
+                parameters.polyapprox = polyapprox
+                parameters.noisefilter.filtersize = filtersize
+                df = benchmark(datafile; parameters=parameters, filteredreference=filteredreference, verbose=false)
+                qs = df[df.lead.=="mean", :qs][1]
+                lock(mutex)
+                try
+                    if qs > bestqs
+                        bestqs = qs
+                        bestparameters = parameters
+                    end
+                    finished += 1
+                    println("finished jobs: $finished")
+                finally
+                    unlock(mutex)
                 end
-                finished += 1
-                println("finished jobs: $finished")
-            finally
-                unlock(mutex)
             end
-            # end
         end
     end
     (bestqs, bestparameters)

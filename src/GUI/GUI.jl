@@ -1,8 +1,12 @@
 module GUI
 
-export gui
+export gui, web
 
+using Makie
 using GLMakie
+using WGLMakie
+import Bonito
+import FileIO
 using Colors
 using DataFrames
 import Polynomials
@@ -12,6 +16,33 @@ import FreeTypeAbstraction.FTFont
 using FlexPoints
 
 include("panels.jl")
+
+function web(;
+    resolution=primary_resolution(), darkmode=true
+)
+    WGLMakie.activate!(;
+        framerate=60,
+        resize_to=:body,
+    )
+
+    Bonito.interactive_server(["public"]; url="0.0.0.0", port=8585, all=true) do
+        app = Bonito.App(; title="FlexPoints") do session::Bonito.Session
+            Bonito.on_document_load(
+                session,
+                Bonito.js"""
+                    document.body.style.margin = 0
+                    document.body.style.padding = 0
+                    document.body.style.backgroundColor = "black"
+                """
+            )
+            appstate = makeui(darkmode, resolution, true)
+            appstate.figure.scene
+        end
+        return Bonito.Routes(
+            "/" => app,
+        )
+    end
+end
 
 function gui(;
     resolution=primary_resolution(), darkmode=true
@@ -180,7 +211,6 @@ function drawgraph!(appstate::AppState)::Axis
 
     axis
 end
-
 function initui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution())::AppState
     GLMakie.activate!(;
         fullscreen=true,
@@ -193,11 +223,19 @@ function initui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resol
     makeui(darkmode, resolution)
 end
 
-function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution())::AppState
+function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution(), web=false)::AppState
     if darkmode
-        set_theme!(theme_black(), size=resolution)
+        if web
+            set_theme!(theme_black())
+        else
+            set_theme!(theme_black(), size=resolution)
+        end
     else
-        set_theme!(theme_light(), size=resolution)
+        if web
+            set_theme!(theme_light())
+        else
+            set_theme!(theme_light(), size=resolution)
+        end
     end
 
     loadfonts()
