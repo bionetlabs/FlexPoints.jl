@@ -2,8 +2,9 @@ module GUI
 
 export gui, web
 
+using Revise
 using Makie
-using GLMakie
+# using GLMakie
 using WGLMakie
 import Bonito
 import FileIO
@@ -17,9 +18,7 @@ using FlexPoints
 
 include("panels.jl")
 
-function web(;
-    resolution=primary_resolution(), darkmode=true
-)
+function web(; darkmode=true)
     WGLMakie.activate!(;
         framerate=60,
         resize_to=:body,
@@ -35,7 +34,7 @@ function web(;
                     document.body.style.backgroundColor = "black"
                 """
             )
-            appstate = makeui(darkmode, resolution, true)
+            appstate = makeui(darkmode, (0, 0), true)
             appstate.figure.scene
         end
         return Bonito.Routes(
@@ -44,13 +43,13 @@ function web(;
     end
 end
 
-function gui(;
-    resolution=primary_resolution(), darkmode=true
-)
-    appstate = initui(darkmode, resolution)
+# function gui(;
+#     resolution=primary_resolution(), darkmode=true
+# )
+#     appstate = initui(darkmode, resolution)
 
-    appstate.figure
-end
+#     appstate.figure
+# end
 
 function drawmenu!(appstate::AppState)
     topbar = appstate.topbar
@@ -211,17 +210,17 @@ function drawgraph!(appstate::AppState)::Axis
 
     axis
 end
-function initui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution())::AppState
-    GLMakie.activate!(;
-        fullscreen=true,
-        framerate=120,
-        fxaa=true,
-        title="FlexPoints",
-        vsync=true,
-    )
+# function initui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution())::AppState
+#     GLMakie.activate!(;
+#         fullscreen=true,
+#         framerate=120,
+#         fxaa=true,
+#         title="FlexPoints",
+#         vsync=true,
+#     )
 
-    makeui(darkmode, resolution)
-end
+#     makeui(darkmode, resolution)
+# end
 
 function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution(), web=false)::AppState
     if darkmode

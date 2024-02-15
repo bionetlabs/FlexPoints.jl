@@ -1,12 +1,14 @@
 FROM julia:1.10
 
+RUN apt update -y && apt install build-essential -y
+
 RUN mkdir /flexpoints
 COPY . /flexpoints
 WORKDIR /flexpoints
 
 RUN chmod +x bin/server.sh
 
-RUN julia -t 1 install.jl
+RUN julia -t 1 sysimage.jl
 
 EXPOSE 8585
 

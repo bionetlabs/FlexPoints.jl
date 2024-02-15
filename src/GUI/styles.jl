@@ -1,5 +1,6 @@
 using Parameters
-using GLMakie
+using WGLMakie
+# using GLMakie
 
 include("utils.jl")
 
