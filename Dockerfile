@@ -1,22 +1,16 @@
-FROM julia:latest
+FROM julia:1.10
 
-# app
 RUN mkdir /flexpoints
 COPY . /flexpoints
 WORKDIR /flexpoints
 
 RUN chmod +x bin/server.sh
 
-# USER flexpoints
+RUN julia -t 1 install.jl
 
-RUN julia -e "using Pkg; Pkg.activate(\".\"); Pkg.instantiate(); Pkg.precompile(); "
-
-# ports
-EXPOSE 8000
-EXPOSE 5050
+EXPOSE 8585
 
 ENV JULIA_DEPOT_PATH "~/.julia"
-ENV GENIE_ENV "dev"
 ENV HOST "0.0.0.0"
 ENV PORT "8585"
 
