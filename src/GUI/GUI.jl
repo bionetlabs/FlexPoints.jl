@@ -24,7 +24,7 @@ function web(; darkmode=true)
         resize_to=:body,
     )
 
-    Bonito.interactive_server(["public"]; url="0.0.0.0", port=8585, all=true) do
+    Bonito.interactive_server(["assets/font", "data"]; url="0.0.0.0", port=8585, all=true) do
         app = Bonito.App(; title="FlexPoints") do session::Bonito.Session
             Bonito.on_document_load(
                 session,
@@ -301,9 +301,10 @@ function updategraph!(appstate::AppState)
 end
 
 function primary_resolution()
-    monitor = GLMakie.GLFW.GetPrimaryMonitor()
-    videomode = GLMakie.MonitorProperties(monitor).videomode
-    return (videomode.width, videomode.height)
+    # monitor = GLMakie.GLFW.GetPrimaryMonitor()
+    # videomode = GLMakie.MonitorProperties(monitor).videomode
+    # return (videomode.width, videomode.height)
+    (0, 0)
 end
 
 function loadfonts()
@@ -312,7 +313,7 @@ function loadfonts()
     for fontfile in readdir(fontspath)
         fontpath = joinpath(fontspath, fontfile)
         if isfile(fontpath)
-            font = GLMakie.to_font(fontpath)
+            font = WGLMakie.to_font(fontpath)
             fontid = Symbol(lowercase(font.family_name), "_", lowercase(font.style_name))
             fonts[fontid] = font
         end
