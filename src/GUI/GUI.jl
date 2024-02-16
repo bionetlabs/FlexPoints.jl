@@ -21,16 +21,24 @@ include("panels.jl")
 function web(; darkmode=true)
     WGLMakie.activate!(;
         framerate=60,
-        resize_to=:body,
+        resize_to=:parent,
     )
 
     app = Bonito.App(; title="FlexPoints") do session::Bonito.Session
         Bonito.on_document_load(
             session,
             Bonito.js"""
-                document.body.style.margin = 0
-                document.body.style.padding = 0
-                document.body.style.backgroundColor = "black"
+                document.body.style.margin = 0;
+                document.body.style.padding = 0;
+                document.body.style.backgroundColor = "black";
+
+                const canvas = document.getElementsByTagName("canvas")[0];
+                window.addEventListener("resize", resizeCanvas, false);
+                function resizeCanvas() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                }
+                resizeCanvas();
             """
         )
         appstate = makeui(darkmode, (0, 0), true)
