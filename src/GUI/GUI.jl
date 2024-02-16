@@ -36,7 +36,7 @@ function web(; darkmode=true)
         appstate = makeui(darkmode, (0, 0), true)
         appstate.figure.scene
     end
-    server = Bonito.Server("0.0.0.0", 8585; proxy_url="https://flexpoints.bionetlabs.com/")
+    server = Bonito.Server("0.0.0.0", 8585; proxy_url="https://flexpoints.bionetlabs.com")
     Bonito.route!(server, "/" => app)
 end
 
