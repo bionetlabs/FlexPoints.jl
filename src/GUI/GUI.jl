@@ -24,23 +24,20 @@ function web(; darkmode=true)
         resize_to=:body,
     )
 
-    Bonito.interactive_server(["assets/font", "data"]; url="0.0.0.0", port=8585, all=true) do
-        app = Bonito.App(; title="FlexPoints") do session::Bonito.Session
-            Bonito.on_document_load(
-                session,
-                Bonito.js"""
-                    document.body.style.margin = 0
-                    document.body.style.padding = 0
-                    document.body.style.backgroundColor = "black"
-                """
-            )
-            appstate = makeui(darkmode, (0, 0), true)
-            appstate.figure.scene
-        end
-        return Bonito.Routes(
-            "/" => app,
+    app = Bonito.App(; title="FlexPoints") do session::Bonito.Session
+        Bonito.on_document_load(
+            session,
+            Bonito.js"""
+                document.body.style.margin = 0
+                document.body.style.padding = 0
+                document.body.style.backgroundColor = "black"
+            """
         )
+        appstate = makeui(darkmode, (0, 0), true)
+        appstate.figure.scene
     end
+    server = Bonito.Server("0.0.0.0", 8585; proxy_url="https://flexpoints.bionetlabs.com/")
+    Bonito.route!(server, "/" => app)
 end
 
 # function gui(;
