@@ -36,7 +36,7 @@ end
 
 @with_kw struct FlexPointsNoiseFilter
     data::Observable{Bool} = true
-    derivatives::Observable{Bool} = false
+    derivatives::Observable{Bool} = true
     filtersize::Observable{UInt} = 7
 end
 
@@ -51,8 +51,8 @@ end
     frequency::Observable{UInt} = 360
     devv::Observable{Float64} = 1.0
     removeoutliers::Observable{Bool} = false
-    yresolution::Observable{Float64} = 0.021
-    polyapprox::Observable{UInt} = 3
+    yresolution::Observable{Float64} = 0.015
+    polyapprox::Observable{UInt} = 6
     polyapprox_yresolutionratio::Observable{Float64} = 2.0
 end
 
@@ -69,8 +69,8 @@ end
 
 @with_kw struct ViewSettings
     data::Observable{Bool} = true
-    filtered::Observable{Bool} = true
-    approximation::Observable{Bool} = true
+    filtered::Observable{Bool} = false
+    approximation::Observable{Bool} = false
     flexpoints::Observable{Bool} = true
     flexpointlines::Observable{Bool} = true
 end

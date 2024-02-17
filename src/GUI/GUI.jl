@@ -21,10 +21,13 @@ include("panels.jl")
 function web(; darkmode=true)
     WGLMakie.activate!(;
         framerate=60,
-        resize_to=:parent,
+        resize_to=:body,
     )
 
     app = Bonito.App(; title="FlexPoints") do session::Bonito.Session
+        appstate = makeui(darkmode, (0, 0), true)
+        figure = appstate.figure.scene
+
         Bonito.on_document_load(
             session,
             Bonito.js"""
@@ -32,19 +35,18 @@ function web(; darkmode=true)
                 document.body.style.padding = 0;
                 document.body.style.backgroundColor = "black";
 
-                const canvas = document.getElementsByTagName("canvas")[0];
-                window.addEventListener("resize", resizeCanvas, false);
-                function resizeCanvas() {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-                }
-                resizeCanvas();
+                 $(figure).then(fig=>{
+                    console.log("figure is ready")
+                    // console.log(fig)
+                    // window.dispatchEvent(new Event("resize"))
+                })
             """
         )
-        appstate = makeui(darkmode, (0, 0), true)
-        appstate.figure.scene
+
+        figure
     end
     server = Bonito.Server("0.0.0.0", 8585; proxy_url="https://flexpoints.bionetlabs.com")
+    # server = Bonito.Server("0.0.0.0", 8585)
     Bonito.route!(server, "/" => app)
 end
 
@@ -228,6 +230,10 @@ end
 # end
 
 function makeui(darkmode::Bool, resolution::Tuple{Integer,Integer}=primary_resolution(), web=false)::AppState
+    WGLMakie.activate!(;
+        framerate=60,
+        resize_to=:body,
+    )
     if darkmode
         if web
             set_theme!(theme_black())
